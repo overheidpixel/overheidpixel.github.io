@@ -6,174 +6,48 @@ body {
     padding: 0 20px;
 }
 
-/* Header */
 header {
     text-align: center;
     margin-top: 30px;
 }
+header h1 { font-size: 2.8em; font-weight: 700; color: #0d3b66; }
+header p { font-size: 1.2em; color: #334e68; }
 
-header h1 {
-    font-size: 2.8em;
-    font-weight: 700;
-    color: #0d3b66;
-}
-
-header p {
-    font-size: 1.2em;
-    color: #334e68;
-}
-
-/* Hoofdpagina kaarten */
-.card {
-    background: #ffffff;
-    padding: 30px;
+/* Progress bar */
+.progress-bar {
+    background: #cfd8e1;
+    height: 8px;
+    border-radius: 4px;
     margin: 20px auto;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    cursor: pointer;
-    max-width: 600px;
-    transition: all 0.3s ease;
-    text-align: center;
-}
-
-.card i {
-    color: #0d3b66;
-    margin-bottom: 15px;
-}
-
-.card h2 {
-    margin: 10px 0;
-    font-size: 1.5em;
-    color: #0d3b66;
-}
-
-.card p {
-    font-size: 1em;
-    color: #334e68;
-}
-
-.card:hover {
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    transform: translateY(-4px);
-}
-
-/* Formulieren */
-form {
-    background: #ffffff;
-    padding: 35px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     max-width: 800px;
-    margin: 40px auto;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
 }
-
-section h2 {
-    font-size: 1.8em;
-    color: #0d3b66;
-    margin-top: 30px;
-    display: flex;
-    align-items: center;
-}
-
-section h2 i {
-    margin-right: 10px;
-    color: #0d3b66;
-}
-
-label {
-    margin-top: 20px;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 1.1em;
-    color: #0d3b66;
-}
-
-input, textarea {
-    padding: 14px;
-    border-radius: 6px;
-    border: 1px solid #cfd8e1;
-    font-size: 1em;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input:focus, textarea:focus {
-    border-color: #0d3b66;
-    box-shadow: 0 0 6px rgba(13,59,102,0.2);
-    outline: none;
-}
-
-input[type="file"] {
-    padding: 6px;
-}
-
-/* Preview */
-.preview {
-    display: flex;
-    gap: 40px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.preview div {
-    flex: 1;
-    min-width: 200px;
-}
-
-.preview img {
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    margin-top: 10px;
-}
-
-/* Knoppen */
-button {
-    margin-top: 30px;
-    padding: 16px;
-    border-radius: 8px;
-    border: none;
+#progress {
+    height: 100%;
+    width: 0%;
     background: #0d3b66;
-    color: #ffffff;
-    font-size: 1.2em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: width 0.3s ease;
 }
 
-button i {
-    margin-right: 10px;
-}
+/* Wizard steps */
+.form-step { display: none; background: #fff; padding: 35px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); max-width: 800px; margin: 20px auto; }
+.form-step.active { display: block; }
 
-button:hover {
-    background: #07406c;
-    transform: translateY(-2px);
-}
+label { margin-top: 20px; margin-bottom: 8px; font-weight: 600; font-size: 1.1em; color: #0d3b66; }
+input, textarea { padding: 14px; border-radius: 6px; border: 1px solid #cfd8e1; font-size: 1em; width: 100%; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+input:focus, textarea:focus { border-color: #0d3b66; box-shadow: 0 0 6px rgba(13,59,102,0.2); outline: none; }
+input[type="file"] { padding: 6px; }
 
-/* Responsiviteit */
-@media (max-width: 1024px) {
-    .preview {
-        flex-direction: column;
-    }
-}
+.buttons { margin-top: 30px; display: flex; justify-content: space-between; }
+button { padding: 16px; border-radius: 8px; border: none; background: #0d3b66; color: #fff; font-size: 1.2em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+button:hover { background: #07406c; transform: translateY(-2px); }
+button i { margin-right: 10px; }
 
-@media (max-width: 768px) {
-    form, .card {
-        width: 90%;
-        padding: 25px;
-    }
-    header h1 {
-        font-size: 2.2em;
-    }
-}
+.preview { display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+.preview div { flex: 1; min-width: 200px; }
+.preview img { width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 10px; }
 
-@media (max-width: 480px) {
-    header h1 {
-        font-size: 1.8em;
-    }
-    button {
-        font-size: 1em;
-        padding: 12px;
-    }
-}
+/* Responsief */
+@media(max-width:1024px){.preview{flex-direction:column;}}
+@media(max-width:768px){.form-step{width:90%; padding:25px;}}
+@media(max-width:480px){header h1{font-size:1.8em;} button{font-size:1em; padding:12px;}}
