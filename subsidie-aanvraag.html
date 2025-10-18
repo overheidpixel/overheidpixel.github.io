@@ -1,250 +1,1028 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subsidie Aanvraag Formulier - FiveM</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Subsidie Aanvraag - Modern</title>
+
+    <!-- Tailwind CDN voor snelle styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f6fa; }
-        header { text-align: center; margin-bottom: 20px; }
-        form { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .form-step { display: none; }
-        .form-step.active { display: block; }
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        .buttons { margin-top: 20px; display: flex; justify-content: space-between; }
-        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #2980b9; }
-        .preview img { max-width: 120px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; }
-        .paste-area { border: 2px dashed #aaa; padding: 15px; text-align: center; color: #666; margin-top: 10px; cursor: pointer; }
-        .progress-bar { background: #ddd; height: 10px; border-radius: 5px; margin-bottom: 20px; }
-        #progress { background: #3498db; height: 10px; border-radius: 5px; width: 0%; transition: 0.3s; }
+        /* Kleine aanvullende styling */
+        .dropzone {
+            border: 2px dashed rgba(99, 102, 241, 0.15);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(250, 250, 255, 0.4));
+            transition: box-shadow .15s ease, border-color .15s ease;
+        }
+
+        .dropzone.dragover {
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .thumb {
+            width: 110px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: .5rem;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .draggable {
+            cursor: grab;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        /* small sheet-like card feel for sections */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(15, 23, 42, 0.06);
+            padding: 18px;
+        }
+
+        .home-btn {
+            margin-top: 15px;
+            background: #ffffff20;
+            border: 1px solid #16cf98;
+            color: #00FFB3;
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background: #00FFB3;
+            color: #141E30;
+            transform: scale(1.05);
+        }
     </style>
 </head>
-<body>
-<header>
-    <h1>Subsidie Aanvraag Formulier</h1>
-    <p>Volg de stappen om je aanvraag in te dienen</p>
-</header>
 
-<div class="progress-bar"><div id="progress"></div></div>
+<body class="bg-gray-50 text-gray-800 antialiased">
 
-<form id="wizardForm">
-
-    <!-- Step 1 -->
-    <div class="form-step active">
-        <h2><i class="fas fa-info-circle"></i> Bedrijfsinformatie</h2>
-        <label>Bedrijfsnaam</label><input type="text" name="bedrijf" required>
-        <label>Eigenaar</label><input type="text" name="eigenaar" required>
-        <label>Datum oprichting</label><input type="date" name="oprichting" required>
-        <label>Type bedrijf</label>
-        <select name="bedrijf_type" required>
-            <option value="">-- Kies een optie --</option>
-            <option value="taxi">Taxi bedrijf</option>
-            <option value="garage">Garage / Autohandel</option>
-            <option value="drugs">Legale handel</option>
-            <option value="restaurant">Restaurant / Café</option>
-            <option value="overig">Overig</option>
-        </select>
-        <label>Is het bedrijf al actief?</label>
-        <div class="radio-group">
-            <label><input type="radio" name="actief" value="Ja" required> Ja</label>
-            <label><input type="radio" name="actief" value="Nee"> Nee</label>
+    <div class="max-w-5xl mx-auto p-6">
+        <div class="mb-6">
+            <header class="flex items-center gap-4">
+                <div
+                    class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-400 rounded-lg flex items-center justify-center text-white text-2xl shadow-md">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-semibold">Subsidie Aanvraagformulier</h1>
+                    <p class="text-sm text-gray-500 mt-1">Modern formulier — multi-upload, screenshot-paste, en
+                        uitgebreide PDF-export.</p>
+                </div>
+            </header>
         </div>
-        <label>Aantal werknemers</label><input type="number" name="werknemers" min="0" step="1" required>
-        <label>Welke locaties gebruikt het bedrijf?</label><textarea name="locaties" rows="3" required></textarea>
-        <div class="buttons"><button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button></div>
+        <button class="home-btn" onclick="window.location.href='index.html'">
+            <i class="fas fa-home"></i> Terug naar Home
+        </button>
+        <!-- Form container -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- LEFT: Wizard / Sections -->
+            <section class="md:col-span-2 space-y-6">
+
+                <!-- Progress indicator -->
+                <div class="card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-medium">Stap <span id="stepIndex">1</span> van 4</h2>
+                            <p class="text-sm text-gray-500" id="stepTitle">Bedrijfsinformatie</p>
+                        </div>
+                        <div class="text-sm text-gray-500">Status: <span id="statusText">Concept</span></div>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2 mt-4 overflow-hidden">
+                        <div id="progress" class="h-2 bg-indigo-500 w-0 transition-all"></div>
+                    </div>
+                </div>
+
+                <form id="mainForm" class="space-y-6">
+
+                    <!-- STEP 1 -->
+                    <section class="card form-step" data-step="0">
+                        <h3 class="font-semibold text-lg mb-2">1. Bedrijfsinformatie</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Bedrijfsnaam *</label>
+                                <input name="bedrijf" type="text" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                    placeholder="Bijv. Rozenberg Company">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Eigenaar *</label>
+                                <input name="eigenaar" type="text" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                    placeholder="Naam eigenaar">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Datum oprichting *</label>
+                                <input name="oprichting" type="date" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Type bedrijf *</label>
+                                <select name="bedrijf_type" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                                    <option value="">-- Kies --</option>
+                                    <option value="taxi">Taxi</option>
+                                    <option value="garage">Garage / Autohandel</option>
+                                    <option value="restaurant">Restaurant / Café</option>
+                                    <option value="media">Media / Entertainment</option>
+                                    <option value="overig">Overig</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Is het bedrijf actief?</label>
+                                <div class="mt-1 flex gap-4">
+                                    <label class="flex items-center gap-2"><input type="radio" name="actief" value="Ja"
+                                            required> Ja</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="actief"
+                                            value="Nee"> Nee</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Aantal werknemers *</label>
+                                <input name="werknemers" type="number" min="0" step="1" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2" placeholder="0">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="text-sm font-medium text-gray-700">Gebruikte locaties *</label>
+                                <textarea name="locaties" rows="3" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                    placeholder="Adres(sen) of plekken binnen de server"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- STEP 2 -->
+                    <section class="card form-step hidden" data-step="1">
+                        <h3 class="font-semibold text-lg mb-2">2. Financiële informatie & Bewijs</h3>
+
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Huidige inkomsten (per week) *</label>
+                                <input name="inkomsten" type="number" min="0" step="50" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                    placeholder="Bijv. 4500">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Openstaande leningen</label>
+                                    <select name="leningen"
+                                        class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                                        <option value="Nee">Nee</option>
+                                        <option value="Ja">Ja</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Lening bedrag (indien van
+                                        toepassing)</label>
+                                    <input name="lening_bedrag" type="number" min="0" step="50"
+                                        class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Eerdere subsidies aangevraagd?</label>
+                                <div class="mt-1 flex gap-4">
+                                    <label class="flex items-center gap-2"><input type="radio" name="vorige_subsidie"
+                                            value="Ja"> Ja</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="vorige_subsidie"
+                                            value="Nee"> Nee</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Opmerkingen bij financiële
+                                    situatie</label>
+                                <textarea name="fin_opmerkingen" rows="3"
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"></textarea>
+                            </div>
+
+                            <!-- MULTI UPLOAD: bankafschriften -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Bankafschriften — meerdere foto's /
+                                    plak screenshots</label>
+                                <div class="mt-2">
+                                    <div id="bankDrop" class="dropzone p-4 text-center cursor-pointer" tabindex="0">
+                                        <input id="bankInput" type="file" accept="image/*" multiple
+                                            class="hidden-input" />
+                                        <div class="flex items-center justify-center gap-3">
+                                            <i class="fa-regular fa-image text-2xl text-indigo-500"></i>
+                                            <div class="text-sm text-gray-600">Sleep hierheen, klik om te kiezen of plak
+                                                een screenshot (Ctrl+V)</div>
+                                        </div>
+                                    </div>
+
+                                    <div id="bankPreview" class="mt-3 flex flex-wrap gap-3"></div>
+                                </div>
+                            </div>
+
+                            <!-- MULTI UPLOAD: dashboard -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Dashboard / Bossmenu screenshots
+                                    (meerdere)</label>
+                                <div class="mt-2">
+                                    <div id="dashDrop" class="dropzone p-4 text-center cursor-pointer" tabindex="0">
+                                        <input id="dashInput" type="file" accept="image/*" multiple
+                                            class="hidden-input" />
+                                        <div class="flex items-center justify-center gap-3">
+                                            <i class="fa-solid fa-tachometer-alt text-2xl text-indigo-500"></i>
+                                            <div class="text-sm text-gray-600">Sleep of kies bestanden, of plak (Ctrl+V)
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="dashPreview" class="mt-3 flex flex-wrap gap-3"></div>
+                                </div>
+                            </div>
+
+                            <!-- MULTI UPLOAD: overige bewijsstukken -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Overige bewijsstukken (vergunningen,
+                                    contracten) — optioneel</label>
+                                <div class="mt-2">
+                                    <div id="otherDrop" class="dropzone p-4 text-center cursor-pointer" tabindex="0">
+                                        <input id="otherInput" type="file" accept="image/*" multiple
+                                            class="hidden-input" />
+                                        <div class="flex items-center justify-center gap-3">
+                                            <i class="fa-regular fa-file-lines text-2xl text-indigo-500"></i>
+                                            <div class="text-sm text-gray-600">Meerdere bestanden toegestaan</div>
+                                        </div>
+                                    </div>
+                                    <div id="otherPreview" class="mt-3 flex flex-wrap gap-3"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- STEP 3 -->
+                    <section class="card form-step hidden" data-step="2">
+                        <h3 class="font-semibold text-lg mb-2">3. Subsidie aanvraag & planning</h3>
+
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Doel van de subsidie *</label>
+                                <textarea name="doel" rows="4" required
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Welke middelen zijn nodig?</label>
+                                <div class="mt-2 flex gap-4 flex-wrap">
+                                    <label><input type="checkbox" name="middelen" value="Voertuigen"> Voertuigen</label>
+                                    <label><input type="checkbox" name="middelen" value="Apparatuur"> Apparatuur</label>
+                                    <label><input type="checkbox" name="middelen" value="Personeel"> Personeel</label>
+                                    <label><input type="checkbox" name="middelen" value="Andere"> Andere</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Verwachte resultaten</label>
+                                <textarea name="resultaat" rows="3"
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Personeel in dienst
+                                        (aantal)</label>
+                                    <input name="personeel" type="number" min="0" step="1"
+                                        class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Gewenste
+                                        uitbetalingstermijn</label>
+                                    <input name="betalingstermijn" type="text"
+                                        class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                        placeholder="Bijv. 2 weken">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Eerdere ervaringen /
+                                    referenties</label>
+                                <textarea name="ervaringen" rows="3"
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Geplande investeringen (kort
+                                    overzicht)</label>
+                                <textarea name="investeringen" rows="3"
+                                    class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- STEP 4 -->
+                    <section class="card form-step hidden" data-step="3">
+                        <h3 class="font-semibold text-lg mb-2">4. Controle & Download</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Samenvatting</h4>
+                                <div id="summaryBox" class="p-3 rounded-md bg-gray-50 text-sm text-gray-700"
+                                    style="min-height:180px">
+                                    <!-- dynamic summary populated by JS -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Instellingen PDF</h4>
+                                <div class="space-y-2">
+                                    <label class="block text-sm text-gray-600">Titel dossier</label>
+                                    <input id="pdfTitle" type="text"
+                                        class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2"
+                                        value="Subsidie Aanvraag Dossier">
+                                    <label class="block text-sm text-gray-600 mt-2">Voeg inhoudsopgave toe?</label>
+                                    <select id="toc" class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                                        <option value="ja">Ja</option>
+                                        <option value="nee">Nee</option>
+                                    </select>
+                                    <label class="block text-sm text-gray-600 mt-2">PDF Pagina-indeling</label>
+                                    <select id="pdfLayout" class="mt-1 w-full rounded-md border-gray-200 shadow-sm p-2">
+                                        <option value="portrait">A4 Portrait</option>
+                                        <option value="landscape">A4 Landscape</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex items-center gap-3">
+                            <button id="saveDraft" type="button" class="px-4 py-2 bg-yellow-400 rounded-md text-sm">Sla
+                                concept op</button>
+                            <button id="loadDraft" type="button" class="px-4 py-2 bg-gray-200 rounded-md text-sm">Laad
+                                concept</button>
+                            <button id="clearDraft" type="button"
+                                class="px-4 py-2 bg-red-100 text-red-700 rounded-md text-sm">Verwijder concept</button>
+                            <div class="flex-1 text-right">
+                                <button id="prevBtn" type="button" class="px-4 py-2 bg-gray-300 rounded-md">←
+                                    Vorige</button>
+                                <button id="genPdfBtn" type="button"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md">Genereer & Download
+                                    PDF</button>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-2">Alle afbeeldingen (bankafschriften, dashboard & overige)
+                            worden in het dossier opgenomen.</p>
+                    </section>
+
+                </form>
+            </section>
+
+            <!-- RIGHT: Previews / Controls -->
+            <aside class="space-y-6">
+                <div class="card">
+                    <h4 class="font-semibold">Preview Thumbnails</h4>
+                    <p class="text-xs text-gray-500 mt-2">Sleep miniaturen om de volgorde te wijzigen. Klik op een
+                        thumbnail om volledig te bekijken of verwijder via het kruisje.</p>
+                    <div id="allPreviews" class="mt-3 flex flex-wrap gap-3"></div>
+                </div>
+
+                <div class="card">
+                    <h4 class="font-semibold">Snel Acties</h4>
+                    <div class="mt-3 space-y-2">
+                        <button id="btnToStep1" class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-md">Naar
+                            Bedrijfsinfo</button>
+                        <button id="btnToStep2" class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-md">Naar
+                            Financieel</button>
+                        <button id="btnToStep3" class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-md">Naar
+                            Aanvraag</button>
+                        <button id="btnToStep4" class="w-full px-3 py-2 bg-indigo-600 text-white rounded-md">Naar
+                            Controle</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4 class="font-semibold">Help & Tips</h4>
+                    <ul class="mt-2 text-sm text-gray-600 space-y-2">
+                        <li>Gebruik <strong>Ctrl+V</strong> om screenshots direct te plakken (in de pagina) — ze worden
+                            toegevoegd aan de previews.</li>
+                        <li>Je kunt concept opslaan en later verder bewerken.</li>
+                        <li>PDF bevat alle tekst en afbeeldingen, netjes op A4.</li>
+                    </ul>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Modal for image full view -->
+        <div id="imgModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-lg overflow-hidden max-w-3xl w-full">
+                <div class="p-3 flex justify-end">
+                    <button id="closeImgModal" class="text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-3">
+                    <img id="modalImg" src="" alt="preview" class="w-full h-auto rounded-md" />
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Step 2 -->
-    <div class="form-step">
-        <h2><i class="fas fa-university"></i> Financiële informatie</h2>
+    <script>
+        (function () {
+            // Shortcuts
+            const { jsPDF } = window.jspdf;
 
-        <label>Bankafschriften (meerdere foto's of plak screenshots)</label>
-        <input type="file" id="bankFiles" name="bankafschriften" accept="image/*" multiple>
-        <div id="bankPreview" class="preview"></div>
-        <div class="paste-area" data-target="bankPreview">Plak hier screenshots (Ctrl+V)</div>
-
-        <label>Dashboard (bossmenu screenshots)</label>
-        <input type="file" id="dashFiles" name="dashboard" accept="image/*" multiple>
-        <div id="dashPreview" class="preview"></div>
-        <div class="paste-area" data-target="dashPreview">Plak hier screenshots (Ctrl+V)</div>
-
-        <label>Huidige inkomsten (per week)</label><input type="number" name="inkomsten" min="0" step="50" required>
-        <label>Heeft u openstaande leningen?</label>
-        <label><input type="radio" name="leningen" value="Ja" required> Ja</label>
-        <label><input type="radio" name="leningen" value="Nee"> Nee</label>
-        <label>Indien ja, bedrag:</label><input type="number" name="lening_bedrag" min="0" step="50">
-        <label>Heeft u eerder subsidies aangevraagd?</label>
-        <label><input type="radio" name="vorige_subsidie" value="Ja" required> Ja</label>
-        <label><input type="radio" name="vorige_subsidie" value="Nee"> Nee</label>
-        <label>Eventuele opmerkingen</label><textarea name="fin_opmerkingen" rows="3"></textarea>
-
-        <div class="buttons">
-            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
-            <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
-        </div>
-    </div>
-
-    <!-- Step 3 -->
-    <div class="form-step">
-        <h2><i class="fas fa-edit"></i> Subsidie details</h2>
-        <label>Doel van de subsidie</label><textarea name="doel" rows="4" required></textarea>
-        <label>Welke middelen zijn nodig?</label>
-        <label><input type="checkbox" name="middelen" value="Voertuigen"> Voertuigen</label>
-        <label><input type="checkbox" name="middelen" value="Apparatuur"> Apparatuur</label>
-        <label><input type="checkbox" name="middelen" value="Personeel"> Personeel</label>
-        <label><input type="checkbox" name="middelen" value="Andere"> Andere</label>
-        <label>Wat is het verwachte resultaat?</label><textarea name="resultaat" rows="3" required></textarea>
-        <label>Benodigde vergunningen?</label>
-        <label><input type="checkbox" name="vergunningen" value="Ja"> Ja</label>
-        <label><input type="checkbox" name="vergunningen" value="Nee"> Nee</label>
-        <label><input type="checkbox" name="vergunningen" value="In aanvraag"> In aanvraag</label>
-        <label>Personeel in dienst</label><input type="number" name="personeel" min="0" required>
-        <label>Ervaringen / referenties</label><textarea name="ervaringen" rows="3"></textarea>
-        <label>Geplande investeringen</label><textarea name="investeringen" rows="3"></textarea>
-        <label>Gewenste uitbetalingstermijn</label><input type="text" name="betalingstermijn" placeholder="Bijv. 2 weken">
-
-        <div class="buttons">
-            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
-            <button type="button" id="downloadBtn">Download PDF <i class="fas fa-file-download"></i></button>
-        </div>
-    </div>
-
-</form>
-
-<script>
-const { jsPDF } = window.jspdf;
-const form = document.getElementById('wizardForm');
-const steps = Array.from(document.querySelectorAll('.form-step'));
-const progress = document.getElementById('progress');
-let currentStep = 0;
-updateSteps();
-
-document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', () => {
-    if(validateStep(steps[currentStep])) {
-        currentStep++;
-        if(currentStep >= steps.length) currentStep = steps.length - 1;
-        updateSteps();
-    }
-}));
-document.querySelectorAll('.prev-btn').forEach(btn => btn.addEventListener('click', () => {
-    currentStep--;
-    if(currentStep < 0) currentStep = 0;
-    updateSteps();
-}));
-
-function validateStep(step){
-    const inputs = step.querySelectorAll('input, textarea, select');
-    for(const input of inputs){ if(!input.checkValidity()){ input.reportValidity(); return false; } }
-    return true;
-}
-function updateSteps(){
-    steps.forEach((s,i)=>s.classList.toggle('active', i===currentStep));
-    progress.style.width = ((currentStep+1)/steps.length*100)+'%';
-}
-
-// Handle paste images
-document.querySelectorAll('.paste-area').forEach(area=>{
-    area.addEventListener('paste', e=>{
-        const items = e.clipboardData.items;
-        for(const item of items){
-            if(item.type.indexOf("image")===0){
-                const file = item.getAsFile();
-                const reader = new FileReader();
-                reader.onload = evt=>{
-                    const img=document.createElement('img');
-                    img.src=evt.target.result;
-                    document.getElementById(area.dataset.target).appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-    });
-});
-
-// File preview
-function handleFileInput(inputId, previewId){
-    document.getElementById(inputId).addEventListener('change', e=>{
-        const preview=document.getElementById(previewId);
-        preview.innerHTML='';
-        Array.from(e.target.files).forEach(file=>{
-            const reader=new FileReader();
-            reader.onload=ev=>{
-                const img=document.createElement('img');
-                img.src=ev.target.result;
-                preview.appendChild(img);
+            // State
+            const state = {
+                step: 0,
+                stepsCount: 4,
+                images: { bank: [], dash: [], other: [] } // arrays of {id, dataUrl, name, mime}
             };
-            reader.readAsDataURL(file);
-        });
-    });
-}
-handleFileInput('bankFiles','bankPreview');
-handleFileInput('dashFiles','dashPreview');
 
-// PDF generation
-document.getElementById('downloadBtn').addEventListener('click', async ()=>{
-    const formData=new FormData(form);
-    const doc=new jsPDF({orientation:'p',unit:'pt',format:'a4'});
-    const pageWidth=doc.internal.pageSize.getWidth();
-    let y=40;
-    doc.setFont("helvetica","bold"); doc.setFontSize(18);
-    doc.text("Subsidie Aanvraag Dossier", pageWidth/2, y, {align:'center'});
-    y+=20; doc.setFontSize(10); doc.setFont("helvetica","normal");
-    doc.text(`Datum: ${new Date().toLocaleDateString()}`, pageWidth-40, y, {align:'right'});
-    y+=15;
+            // DOM refs
+            const form = document.getElementById('mainForm');
+            const progress = document.getElementById('progress');
+            const stepIndexEl = document.getElementById('stepIndex');
+            const stepTitleEl = document.getElementById('stepTitle');
+            const statusText = document.getElementById('statusText');
+            const summaryBox = document.getElementById('summaryBox');
+            const allPreviews = document.getElementById('allPreviews');
 
-    function addText(label,val){
-        if(!val)return;
-        const lines=doc.splitTextToSize(`${label}: ${val}`, pageWidth-80);
-        doc.text(lines,40,y);
-        y+=lines.length*12+4;
-    }
+            const stepsEls = Array.from(document.querySelectorAll('.form-step'));
+            const bankDrop = document.getElementById('bankDrop');
+            const dashDrop = document.getElementById('dashDrop');
+            const otherDrop = document.getElementById('otherDrop');
+            const bankInput = document.getElementById('bankInput');
+            const dashInput = document.getElementById('dashInput');
+            const otherInput = document.getElementById('otherInput');
+            const bankPreview = document.getElementById('bankPreview');
+            const dashPreview = document.getElementById('dashPreview');
+            const otherPreview = document.getElementById('otherPreview');
 
-    doc.setFontSize(14); doc.text("1. Bedrijfsinformatie",40,y); y+=14;
-    addText("Bedrijfsnaam",formData.get('bedrijf'));
-    addText("Eigenaar",formData.get('eigenaar'));
-    addText("Datum oprichting",formData.get('oprichting'));
-    addText("Type bedrijf",formData.get('bedrijf_type'));
-    addText("Actief",formData.get('actief'));
-    addText("Werknemers",formData.get('werknemers'));
-    addText("Locaties",formData.get('locaties'));
-    y+=10; doc.setFontSize(14); doc.text("2. Financiële informatie",40,y); y+=14;
-    addText("Inkomsten",formData.get('inkomsten'));
-    addText("Leningen",formData.get('leningen'));
-    addText("Lening bedrag",formData.get('lening_bedrag'));
-    addText("Eerdere subsidie",formData.get('vorige_subsidie'));
-    addText("Opmerkingen",formData.get('fin_opmerkingen'));
-    y+=10; doc.setFontSize(14); doc.text("3. Subsidie details",40,y); y+=14;
-    addText("Doel",formData.get('doel'));
-    addText("Middelen",formData.getAll('middelen').join(", "));
-    addText("Resultaat",formData.get('resultaat'));
-    addText("Vergunningen",formData.getAll('vergunningen').join(", "));
-    addText("Personeel",formData.get('personeel'));
-    addText("Ervaringen",formData.get('ervaringen'));
-    addText("Investeringen",formData.get('investeringen'));
-    addText("Betalingstermijn",formData.get('betalingstermijn'));
-    y+=10; doc.setFontSize(14); doc.text("4. Bewijsstukken",40,y); y+=10;
+            const prevBtn = document.getElementById('prevBtn');
+            const genPdfBtn = document.getElementById('genPdfBtn');
+            const saveDraftBtn = document.getElementById('saveDraft');
+            const loadDraftBtn = document.getElementById('loadDraft');
+            const clearDraftBtn = document.getElementById('clearDraft');
 
-    async function addImagesFrom(previewId,label){
-        const imgs=document.querySelectorAll(`#${previewId} img`);
-        if(imgs.length===0) return;
-        doc.setFontSize(12); doc.text(label,40,y); y+=10;
-        for(const img of imgs){
-            if(y>700){doc.addPage(); y=40;}
-            doc.addImage(img.src,'JPEG',40,y,150,100);
-            y+=110;
-        }
-    }
+            const pdfTitleInput = document.getElementById('pdfTitle');
+            const tocSelect = document.getElementById('toc');
+            const pdfLayoutSelect = document.getElementById('pdfLayout');
 
-    await addImagesFrom('bankPreview','Bankafschriften');
-    await addImagesFrom('dashPreview','Dashboard Screenshots');
+            const imgModal = document.getElementById('imgModal');
+            const modalImg = document.getElementById('modalImg');
+            const closeImgModal = document.getElementById('closeImgModal');
 
-    doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
-});
-</script>
+            // init
+            updateUI();
+
+            // Navigation helpers
+            function goToStep(n) {
+                state.step = Math.max(0, Math.min(state.stepsCount - 1, n));
+                updateUI();
+            }
+            document.getElementById('btnToStep1').addEventListener('click', () => goToStep(0));
+            document.getElementById('btnToStep2').addEventListener('click', () => goToStep(1));
+            document.getElementById('btnToStep3').addEventListener('click', () => goToStep(2));
+            document.getElementById('btnToStep4').addEventListener('click', () => goToStep(3));
+
+            // Next buttons inside form (delegation)
+            document.querySelectorAll('.next-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (validateStep(state.step)) {
+                        goToStep(state.step + 1);
+                    }
+                });
+            });
+            document.querySelectorAll('.prev-btn').forEach(btn => {
+                btn.addEventListener('click', () => goToStep(state.step - 1));
+            });
+
+            prevBtn.addEventListener('click', () => goToStep(state.step - 1));
+
+            function updateUI() {
+                // Steps visibility
+                stepsEls.forEach((el, idx) => {
+                    el.classList.toggle('hidden', idx !== state.step);
+                });
+                // progress bar
+                const pct = ((state.step + 1) / state.stepsCount) * 100;
+                progress.style.width = pct + '%';
+                stepIndexEl.textContent = state.step + 1;
+                const titles = ['Bedrijfsinformatie', 'Financiële informatie', 'Subsidie aanvraag', 'Controle & Download'];
+                stepTitleEl.textContent = titles[state.step] || '';
+                // Status
+                statusText.textContent = localStorage.getItem('subsidieDraft') ? 'Concept opgeslagen' : 'Concept';
+                // update summary if on final step
+                if (state.step === 3) updateSummary();
+                renderAllPreviews();
+            }
+
+            // Simple step validation: check required inputs in that step
+            function validateStep(stepIndex) {
+                const el = stepsEls[stepIndex];
+                if (!el) return true;
+                const inputs = Array.from(el.querySelectorAll('input, select, textarea')).filter(i => i.required);
+                for (const input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // FILE HANDLING + PASTE
+            function setupDropzone(dropEl, inputEl, previewEl, category) {
+                dropEl.addEventListener('click', () => inputEl.click());
+                inputEl.addEventListener('change', e => handleFiles(e.target.files, category));
+                dropEl.addEventListener('dragover', e => { e.preventDefault(); dropEl.classList.add('dragover'); });
+                dropEl.addEventListener('dragleave', () => dropEl.classList.remove('dragover'));
+                dropEl.addEventListener('drop', e => {
+                    e.preventDefault(); dropEl.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    handleFiles(files, category);
+                });
+            }
+
+            setupDropzone(bankDrop, bankInput, bankPreview, 'bank');
+            setupDropzone(dashDrop, dashInput, dashPreview, 'dash');
+            setupDropzone(otherDrop, otherInput, otherPreview, 'other');
+
+            // Paste anywhere on the page -> add to "bank" by default
+            window.addEventListener('paste', (e) => {
+                if (!e.clipboardData) return;
+                const items = e.clipboardData.items;
+                for (const item of items) {
+                    if (item.type.indexOf('image') === 0) {
+                        const file = item.getAsFile();
+                        handleFiles([file], 'bank');
+                    }
+                }
+            });
+
+            // Convert files to dataURLs and add to state
+            function handleFiles(fileList, category) {
+                const files = Array.from(fileList);
+                for (const f of files) {
+                    if (!f.type.startsWith('image/')) continue;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const id = cryptoRandom();
+                        const mime = fileMimeFromDataURL(ev.target.result);
+                        state.images[category].push({ id, name: f.name || id, dataUrl: ev.target.result, mime });
+                        renderPreviewFor(category);
+                        updateUI();
+                    };
+                    reader.readAsDataURL(f);
+                }
+            }
+
+            // Render preview for a category
+            function renderPreviewFor(category) {
+                const container = category === 'bank' ? bankPreview : category === 'dash' ? dashPreview : otherPreview;
+                container.innerHTML = '';
+                for (const img of state.images[category]) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative draggable';
+                    wrapper.setAttribute('draggable', 'true');
+                    wrapper.dataset.id = img.id;
+                    wrapper.style.width = '110px';
+                    wrapper.innerHTML = `
+          <img src="${img.dataUrl}" class="thumb" title="${escapeHtml(img.name)}"/>
+          <button data-action="remove" title="Verwijder" class="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow text-red-500 border border-gray-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
+                    // click to open modal
+                    wrapper.querySelector('img').addEventListener('click', () => openImageModal(img.dataUrl));
+                    // remove
+                    wrapper.querySelector('button[data-action="remove"]').addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        removeImage(category, img.id);
+                    });
+                    // drag events (for reordering)
+                    wrapper.addEventListener('dragstart', dragStart);
+                    wrapper.addEventListener('dragover', dragOver);
+                    wrapper.addEventListener('drop', dragDrop.bind(null, category));
+                    container.appendChild(wrapper);
+                }
+            }
+
+            function renderAllPreviews() {
+                // bank + dash + other in combined area (for quick overview)
+                allPreviews.innerHTML = '';
+                for (const cat of ['bank', 'dash', 'other']) {
+                    for (const img of state.images[cat]) {
+                        const el = document.createElement('div');
+                        el.className = 'relative';
+                        el.style.width = '90px';
+                        el.innerHTML = `<img src="${img.dataUrl}" class="thumb" style="width:90px;height:60px" />`;
+                        el.querySelector('img').addEventListener('click', () => openImageModal(img.dataUrl));
+                        allPreviews.appendChild(el);
+                    }
+                }
+            }
+
+            // remove image
+            function removeImage(category, id) {
+                state.images[category] = state.images[category].filter(i => i.id !== id);
+                renderPreviewFor(category);
+                renderAllPreviews();
+            }
+
+            // drag & reorder helpers (within same container)
+            let dragSrcEl = null;
+            function dragStart(e) {
+                dragSrcEl = e.currentTarget;
+                e.dataTransfer.effectAllowed = 'move';
+            }
+            function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+            function dragDrop(category, e) {
+                e.preventDefault();
+                const target = e.currentTarget;
+                if (!dragSrcEl || target === dragSrcEl) return;
+                const srcId = dragSrcEl.dataset.id;
+                const tgtId = target.dataset.id;
+                const arr = state.images[category];
+                const srcIdx = arr.findIndex(x => x.id === srcId);
+                const tgtIdx = arr.findIndex(x => x.id === tgtId);
+                if (srcIdx < 0 || tgtIdx < 0) return;
+                // swap or move
+                const [item] = arr.splice(srcIdx, 1);
+                arr.splice(tgtIdx, 0, item);
+                renderPreviewFor(category);
+                renderAllPreviews();
+            }
+
+            // small util
+            function cryptoRandom() { return 'i' + Math.random().toString(36).slice(2, 9); }
+            function fileMimeFromDataURL(dataUrl) {
+                const m = dataUrl.match(/^data:(image\/[a-z0-9.+-]+);/i);
+                return m ? m[1] : 'image/png';
+            }
+            function escapeHtml(s) { return (s + '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+
+            // image modal
+            function openImageModal(src) { modalImg.src = src; imgModal.classList.remove('hidden'); imgModal.classList.add('flex'); }
+            closeImgModal.addEventListener('click', () => { imgModal.classList.add('hidden'); imgModal.classList.remove('flex'); });
+
+            // Save / Load Draft
+            saveDraftBtn.addEventListener('click', () => {
+                try {
+                    const data = gatherFormData(true);
+                    localStorage.setItem('subsidieDraft', JSON.stringify(data));
+                    statusText.textContent = 'Concept opgeslagen';
+                    alert('Concept opgeslagen in je browser (localStorage).');
+                } catch (e) {
+                    console.error(e);
+                    alert('Fout bij opslaan concept.');
+                }
+            });
+
+            loadDraftBtn.addEventListener('click', () => {
+                const raw = localStorage.getItem('subsidieDraft');
+                if (!raw) { alert('Geen concept gevonden.'); return; }
+                try {
+                    const data = JSON.parse(raw);
+                    applyDraft(data);
+                    alert('Concept geladen.');
+                } catch (e) {
+                    console.error(e);
+                    alert('Fout bij laden concept.');
+                }
+            });
+
+            clearDraftBtn.addEventListener('click', () => {
+                if (confirm('Verwijder opgeslagen concept?')) { localStorage.removeItem('subsidieDraft'); statusText.textContent = 'Concept'; }
+            });
+
+            function gatherFormData(includeImages = false) {
+                const fd = new FormData(form);
+                const out = { fields: {}, images: { bank: [], dash: [], other: [] }, meta: { savedAt: new Date().toISOString() } };
+                for (const [k, v] of fd.entries()) {
+                    // support multi checkbox (middelen etc.)
+                    if (out.fields[k] === undefined) out.fields[k] = v;
+                    else if (Array.isArray(out.fields[k])) out.fields[k].push(v);
+                    else out.fields[k] = [out.fields[k], v];
+                }
+                if (includeImages) {
+                    out.images = JSON.parse(JSON.stringify(state.images)); // deep copy simple
+                }
+                return out;
+            }
+
+            function applyDraft(data) {
+                // fields
+                for (const [k, v] of Object.entries(data.fields || {})) {
+                    const el = form.querySelector(`[name="${k}"]`);
+                    if (!el) {
+                        // maybe multiple or missing; handle specially
+                        const inputs = form.querySelectorAll(`[name="${k}"]`);
+                        if (inputs.length) {
+                            inputs.forEach(i => {
+                                if (i.type === 'checkbox' || i.type === 'radio') { i.checked = Array.isArray(v) ? v.includes(i.value) : (i.value === v); }
+                                else i.value = v;
+                            });
+                        }
+                        continue;
+                    }
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        // set matching
+                        const all = form.querySelectorAll(`[name="${k}"]`);
+                        all.forEach(i => {
+                            if (Array.isArray(v)) i.checked = v.includes(i.value);
+                            else i.checked = (i.value === v);
+                        });
+                    } else {
+                        el.value = v;
+                    }
+                }
+                // images
+                state.images = { bank: [], dash: [], other: [] };
+                if (data.images) {
+                    for (const cat of ['bank', 'dash', 'other']) {
+                        const arr = data.images[cat] || [];
+                        for (const it of arr) {
+                            // ensure we have id and dataUrl
+                            if (it.dataUrl) state.images[cat].push(it);
+                        }
+                        renderPreviewFor(cat);
+                    }
+                }
+                updateUI();
+            }
+
+            // Summary
+            function updateSummary() {
+                const data = gatherFormData();
+                let html = '';
+                html += `<div class="text-sm space-y-2">`;
+                html += `<div><strong>Bedrijf:</strong> ${escapeHtml(data.fields.bedrijf || '')}</div>`;
+                html += `<div><strong>Eigenaar:</strong> ${escapeHtml(data.fields.eigenaar || '')}</div>`;
+                html += `<div><strong>Datum oprichting:</strong> ${escapeHtml(data.fields.oprichting || '')}</div>`;
+                html += `<div><strong>Type:</strong> ${escapeHtml(data.fields.bedrijf_type || '')}</div>`;
+                html += `<div><strong>Inkomsten / week:</strong> ${escapeHtml(data.fields.inkomsten || '')}</div>`;
+                html += `<div><strong>Doel:</strong> ${escapeHtml(data.fields.doel || '')}</div>`;
+                html += `<div><strong>Middelen:</strong> ${escapeHtml(Array.isArray(data.fields.middelen) ? data.fields.middelen.join(', ') : (data.fields.middelen || ''))}</div>`;
+                html += `<div><strong>Aantal bewijzen (bank):</strong> ${state.images.bank.length}</div>`;
+                html += `<div><strong>Aantal dashboard images:</strong> ${state.images.dash.length}</div>`;
+                html += `<div><strong>Overige bewijsstukken:</strong> ${state.images.other.length}</div>`;
+                html += `</div>`;
+                summaryBox.innerHTML = html;
+            }
+
+            // PDF Generation
+            genPdfBtn.addEventListener('click', async () => {
+                if (!validateStep(0) || !validateStep(1) || !validateStep(2)) {
+                    alert('Vul eerst alle verplichte velden in (stap 1–3).');
+                    goToStep(0);
+                    return;
+                }
+                // gather all data
+                const data = gatherFormData(true);
+                data.meta.title = pdfTitleInput.value || 'Subsidie Aanvraag Dossier';
+                data.meta.toc = tocSelect.value === 'ja';
+                data.meta.layout = pdfLayoutSelect.value || 'portrait';
+                // create PDF
+                await generatePdf(data);
+            });
+
+            async function generatePdf(data) {
+                // settings
+                const orientation = data.meta.layout === 'landscape' ? 'landscape' : 'portrait';
+                const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation });
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 40;
+                let y = 40;
+
+                // helper to add header
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(18);
+                doc.text(data.meta.title, pageWidth / 2, y, { align: 'center' });
+                y += 18;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Aangemaakt: ${new Date().toLocaleString()}`, pageWidth - margin, y, { align: 'right' });
+                y += 12;
+                doc.setDrawColor(230);
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += 18;
+
+                // optionally add TOC
+                const tocEntries = [];
+                if (data.meta.toc) {
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Inhoudsopgave', margin, y);
+                    y += 12;
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('1. Bedrijfsinformatie', margin + 10, y); tocEntries.push({ title: '1. Bedrijfsinformatie', page: doc.getNumberOfPages() });
+                    y += 12;
+                    doc.text('2. Financiële informatie & bewijs', margin + 10, y); tocEntries.push({ title: '2. Financiële informatie & bewijs', page: doc.getNumberOfPages() });
+                    y += 12;
+                    doc.text('3. Subsidie aanvraag', margin + 10, y); tocEntries.push({ title: '3. Subsidie aanvraag', page: doc.getNumberOfPages() });
+                    y += 12;
+                    doc.text('4. Bewijsstukken (afbeeldingen)', margin + 10, y); tocEntries.push({ title: '4. Bewijsstukken (afbeeldingen)', page: doc.getNumberOfPages() });
+                    y += 18;
+                    doc.addPage();
+                    y = 40;
+                }
+
+                // Section 1: Business info
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+                doc.text('1. Bedrijfsinformatie', margin, y); y += 14;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+                const writeLine = (label, value) => {
+                    if (!value) return;
+                    const lines = doc.splitTextToSize(`${label}: ${value}`, pageWidth - margin * 2);
+                    doc.text(lines, margin, y);
+                    y += lines.length * 12 + 6;
+                    if (y > pageHeight - margin) { doc.addPage(); y = margin; }
+                };
+                writeLine('Bedrijfsnaam', data.fields.bedrijf);
+                writeLine('Eigenaar', data.fields.eigenaar);
+                writeLine('Datum oprichting', data.fields.oprichting);
+                writeLine('Type bedrijf', data.fields.bedrijf_type);
+                writeLine('Actief', data.fields.actief);
+                writeLine('Aantal werknemers', data.fields.werknemers);
+                writeLine('Gebruikte locaties', data.fields.locaties);
+
+                // Section 2: Financiële info
+                if (y > pageHeight - margin - 120) { doc.addPage(); y = margin; }
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+                doc.text('2. Financiële informatie & bewijs', margin, y); y += 14;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+                writeLine('Huidige inkomsten (per week)', data.fields.inkomsten);
+                writeLine('Openstaande leningen', data.fields.leningen);
+                writeLine('Lening bedrag', data.fields.lening_bedrag);
+                writeLine('Eerdere subsidies aangevraagd', data.fields.vorige_subsidie);
+                writeLine('Financiële opmerkingen', data.fields.fin_opmerkingen);
+
+                // Section 3: Subsidie aanvraag
+                if (y > pageHeight - margin - 120) { doc.addPage(); y = margin; }
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+                doc.text('3. Subsidie aanvraag', margin, y); y += 14;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+                writeLine('Doel van de subsidie', data.fields.doel);
+                writeLine('Welke middelen', Array.isArray(data.fields.middelen) ? data.fields.middelen.join(', ') : (data.fields.middelen || ''));
+                writeLine('Verwachte resultaten', data.fields.resultaat);
+                writeLine('Personeel in dienst', data.fields.personeel);
+                writeLine('Gewenste uitbetalingstermijn', data.fields.betalingstermijn);
+                writeLine('Eerdere ervaringen / referenties', data.fields.ervaringen);
+                writeLine('Geplande investeringen', data.fields.investeringen);
+
+                // Section 4: Images
+                if (y > pageHeight - margin - 80) { doc.addPage(); y = margin; }
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+                doc.text('4. Bewijsstukken (afbeeldingen)', margin, y); y += 14;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+
+                // helper to add images from category
+                async function addImagesForCategory(catName, images) {
+                    if (!images || images.length === 0) return;
+                    const title = (catName === 'bank' ? 'Bankafschriften' : catName === 'dash' ? 'Dashboard' : 'Overige bewijsstukken');
+                    // header for category
+                    if (y > pageHeight - margin - 40) { doc.addPage(); y = margin; }
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+                    doc.text(title, margin, y); y += 12;
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+                    for (const img of images) {
+                        // If not enough space, new page
+                        const maxWidth = pageWidth - margin * 2;
+                        const maxHeight = pageHeight - margin - y - 40;
+                        let w = 260; let h = 160; // default
+                        // create an Image to get its real size
+                        const dimensions = await getImageDimensions(img.dataUrl);
+                        const ratio = dimensions.width / dimensions.height;
+                        // fit into available width/height
+                        if (ratio >= 1) {
+                            // landscape
+                            w = Math.min(maxWidth, Math.max(120, Math.min(380, dimensions.width * 0.5)));
+                            h = w / ratio;
+                        } else {
+                            h = Math.min(maxHeight || 220, Math.max(100, Math.min(420, dimensions.height * 0.5)));
+                            w = h * ratio;
+                        }
+                        // if not enough vertical space then new page
+                        if (y + h + 30 > pageHeight - margin) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                        try {
+                            // detect mime to pass correct format (JPEG/PNG)
+                            const mime = fileMimeFromDataURL(img.dataUrl);
+                            const format = mime === 'image/png' ? 'PNG' : 'JPEG';
+                            doc.addImage(img.dataUrl, format, margin, y, w, h);
+                        } catch (e) {
+                            // fallback: skip image if addImage fails
+                            console.warn('addImage failed for', img.name, e);
+                            doc.text('Afbeelding kan niet weergegeven worden: ' + img.name, margin, y);
+                            y += 18;
+                            continue;
+                        }
+                        // caption
+                        y += h + 6;
+                        doc.setFontSize(10);
+                        doc.text(`Bestandsnaam: ${img.name}`, margin, y);
+                        y += 14;
+                        doc.setFontSize(11);
+                    }
+                }
+
+                // add bank, dash, other
+                await addImagesForCategory('bank', data.images.bank);
+                await addImagesForCategory('dash', data.images.dash);
+                await addImagesForCategory('other', data.images.other);
+
+                // Final: save PDF
+                const safeName = (data.fields.bedrijf || 'subsidie_aanvraag').replace(/[^\w\-]/g, '_');
+                doc.save(`${safeName}_dossier.pdf`);
+            }
+
+            // small helper to measure image dimensions
+            function getImageDimensions(dataUrl) {
+                return new Promise((res, rej) => {
+                    const img = new Image();
+                    img.onload = () => res({ width: img.naturalWidth, height: img.naturalHeight });
+                    img.onerror = rej;
+                    img.src = dataUrl;
+                });
+            }
+
+            // wire up previews initially (empty)
+            renderPreviewFor('bank'); renderPreviewFor('dash'); renderPreviewFor('other');
+
+            // helper to render preview when state changes (category-specific)
+            function renderPreviewFor(category) {
+                const container = category === 'bank' ? bankPreview : category === 'dash' ? dashPreview : otherPreview;
+                container.innerHTML = '';
+                for (const img of state.images[category]) {
+                    const card = document.createElement('div');
+                    card.className = 'p-1 bg-gray-50 rounded-md flex flex-col items-center gap-1';
+                    card.style.width = '110px';
+                    card.setAttribute('draggable', 'true');
+                    card.dataset.id = img.id;
+                    card.innerHTML = `
+          <img src="${img.dataUrl}" class="thumb" style="width:110px;height:80px;border-radius:8px;"/>
+          <div class="flex items-center gap-1 w-full justify-between text-xs mt-1">
+            <button class="text-gray-500 viewBtn" title="Bekijk"><i class="fa-solid fa-eye"></i></button>
+            <div class="text-xs text-gray-600 truncate">${escapeHtml(img.name)}</div>
+            <button class="text-red-500 delBtn" title="Verwijder"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+                    // events
+                    card.querySelector('.viewBtn').addEventListener('click', () => openImageModal(img.dataUrl));
+                    card.querySelector('.delBtn').addEventListener('click', () => removeImage(category, img.id));
+                    // drag reorder within same preview
+                    card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', img.id); card.classList.add('opacity-60'); });
+                    card.addEventListener('dragend', () => card.classList.remove('opacity-60'));
+                    card.addEventListener('dragover', e => e.preventDefault());
+                    card.addEventListener('drop', e => {
+                        e.preventDefault();
+                        const draggedId = e.dataTransfer.getData('text/plain');
+                        if (draggedId === img.id) return;
+                        const arr = state.images[category];
+                        const fromIdx = arr.findIndex(x => x.id === draggedId);
+                        const toIdx = arr.findIndex(x => x.id === img.id);
+                        if (fromIdx >= 0 && toIdx >= 0) {
+                            const [item] = arr.splice(fromIdx, 1);
+                            arr.splice(toIdx, 0, item);
+                            renderPreviewFor(category);
+                            renderAllPreviews();
+                        }
+                    });
+                    container.appendChild(card);
+                }
+                renderAllPreviews();
+            }
+
+            // utility to get mime from dataURL (duplicated for closure)
+            function fileMimeFromDataURL(dataUrl) {
+                const m = dataUrl.match(/^data:(image\/[a-z0-9.+-]+);/i);
+                return m ? m[1] : 'image/png';
+            }
+
+            // final small: update UI on form change to reflect live summary / status
+            form.addEventListener('change', () => {
+                if (state.step === 3) updateSummary();
+            });
+
+            // expose minimal console hint
+            console.log('Subsidie formulier init klaar.');
+        })();
+    </script>
 </body>
+
 </html>
