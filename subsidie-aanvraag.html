@@ -11,115 +11,171 @@
 <body>
     <header>
         <h1>Subsidie Aanvraag Formulier</h1>
-        <p>Vul alle secties in om een volledig PDF-document te genereren</p>
+        <p>Volg de stappen om je aanvraag in te dienen</p>
     </header>
 
-    <form id="subsidieForm">
+    <div class="progress-bar">
+        <div id="progress"></div>
+    </div>
 
-        <!-- Sectie 1: Bedrijfsinformatie -->
-        <section>
+    <form id="wizardForm">
+        <!-- Step 1: Bedrijf -->
+        <div class="form-step active">
             <h2><i class="fas fa-info-circle"></i> Bedrijfsinformatie</h2>
-        </section>
+            <label>Bedrijfsnaam</label>
+            <input type="text" name="bedrijf" required>
+            <label>Eigenaar</label>
+            <input type="text" name="eigenaar" required>
+            <div class="buttons">
+                <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
 
-        <!-- Dynamische vragen -->
-        <div id="formFields"></div>
+        <!-- Step 2: Bankafschriften -->
+        <div class="form-step">
+            <h2><i class="fas fa-university"></i> Bankgegevens</h2>
+            <label>Bankafschriften (upload foto)</label>
+            <input type="file" name="bankafschriften" accept="image/*" required>
+            <img id="previewBank" src="" alt="Bankafschriften Preview">
+            <label>Dashboard (bossmenu screenshot)</label>
+            <input type="file" name="dashboard" accept="image/*" required>
+            <img id="previewDashboard" src="" alt="Dashboard Preview">
+            <div class="buttons">
+                <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
+                <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
 
-        <!-- Sectie 2: Preview afbeeldingen -->
-        <section>
-            <h2><i class="fas fa-image"></i> Preview uploads</h2>
+        <!-- Step 3: Aanvraag -->
+        <div class="form-step">
+            <h2><i class="fas fa-edit"></i> Omschrijving aanvraag</h2>
+            <label>Omschrijf je aanvraag</label>
+            <textarea name="omschrijving" rows="6" required></textarea>
+            <div class="buttons">
+                <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
+                <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 4: Preview & PDF -->
+        <div class="form-step">
+            <h2><i class="fas fa-file-pdf"></i> Preview & Download</h2>
             <div class="preview">
                 <div>
                     <label>Bankafschriften preview:</label>
-                    <img id="previewBank" src="" alt="Bankafschriften Preview">
+                    <img id="finalPreviewBank" src="">
                 </div>
                 <div>
                     <label>Dashboard preview:</label>
-                    <img id="previewDashboard" src="" alt="Dashboard Preview">
+                    <img id="finalPreviewDashboard" src="">
                 </div>
             </div>
-        </section>
-
-        <button type="button" id="submitBtn"><i class="fas fa-download"></i> Download aanvraag als PDF</button>
+            <div class="buttons">
+                <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
+                <button type="button" id="downloadBtn"><i class="fas fa-download"></i> Download PDF</button>
+            </div>
+        </div>
     </form>
 
     <script>
         const { jsPDF } = window.jspdf;
 
-        const vragen = [
-            { label: "Bedrijfsnaam", type: "text", name: "bedrijf", required: true },
-            { label: "Eigenaar", type: "text", name: "eigenaar", required: true },
-            { label: "Bankafschriften (upload foto)", type: "file", name: "bankafschriften", accept: "image/*", required: true },
-            { label: "Financieel dashboard (bossmenu screenshot)", type: "file", name: "dashboard", accept: "image/*", required: true },
-            { label: "Omschrijf je aanvraag", type: "textarea", name: "omschrijving", required: true }
-        ];
+        const form = document.getElementById('wizardForm');
+        const steps = Array.from(document.querySelectorAll('.form-step'));
+        const progress = document.getElementById('progress');
+        let currentStep = 0;
 
-        const formFields = document.getElementById('formFields');
-        vragen.forEach(vraag => {
-            const label = document.createElement('label');
-            label.textContent = vraag.label;
-            formFields.appendChild(label);
+        function updateSteps() {
+            steps.forEach((step, index) => {
+                step.classList.toggle('active', index === currentStep);
+            });
+            progress.style.width = ((currentStep + 1) / steps.length * 100) + '%';
+        }
 
-            let input;
-            if(vraag.type === "textarea") {
-                input = document.createElement('textarea');
-                input.rows = 5;
-            } else {
-                input = document.createElement('input');
-                input.type = vraag.type;
-                if(vraag.accept) input.accept = vraag.accept;
-            }
-            input.name = vraag.name;
-            if(vraag.required) input.required = true;
-
-            if(vraag.type === "file") {
-                input.addEventListener('change', e => {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        if(vraag.name === "bankafschriften") document.getElementById('previewBank').src = ev.target.result;
-                        if(vraag.name === "dashboard") document.getElementById('previewDashboard').src = ev.target.result;
-                    };
-                    reader.readAsDataURL(e.target.files[0]);
-                });
-            }
-
-            formFields.appendChild(input);
+        document.querySelectorAll('.next-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if(validateStep(steps[currentStep])){
+                    currentStep++;
+                    if(currentStep >= steps.length) currentStep = steps.length - 1;
+                    updateSteps();
+                    updatePreviewImages();
+                }
+            });
         });
 
-        document.getElementById('submitBtn').addEventListener('click', () => {
-            const form = document.getElementById('subsidieForm');
+        document.querySelectorAll('.prev-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentStep--;
+                if(currentStep < 0) currentStep = 0;
+                updateSteps();
+                updatePreviewImages();
+            });
+        });
+
+        function validateStep(step){
+            const inputs = Array.from(step.querySelectorAll('input, textarea'));
+            for(const input of inputs){
+                if(!input.checkValidity()) {
+                    input.reportValidity();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function updatePreviewImages(){
+            const bankFile = form.bankafschriften.files[0];
+            const dashboardFile = form.dashboard.files[0];
+            if(bankFile){
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('previewBank').src = e.target.result;
+                    document.getElementById('finalPreviewBank').src = e.target.result;
+                };
+                reader.readAsDataURL(bankFile);
+            }
+            if(dashboardFile){
+                const reader2 = new FileReader();
+                reader2.onload = e => {
+                    document.getElementById('previewDashboard').src = e.target.result;
+                    document.getElementById('finalPreviewDashboard').src = e.target.result;
+                };
+                reader2.readAsDataURL(dashboardFile);
+            }
+        }
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
             const formData = new FormData(form);
             const doc = new jsPDF();
-
             doc.setFontSize(22);
             doc.text("Subsidie Aanvraag", 105, 20, null, null, 'center');
 
             let y = 40;
-            vragen.forEach(vraag => {
-                const value = formData.get(vraag.name);
-                if(vraag.type !== "file") {
-                    doc.setFontSize(14);
-                    doc.text(`${vraag.label}: ${value}`, 20, y);
-                    y += 10;
-                }
-            });
+            doc.setFontSize(14);
+            doc.text(`Bedrijfsnaam: ${formData.get('bedrijf')}`, 20, y); y+=10;
+            doc.text(`Eigenaar: ${formData.get('eigenaar')}`, 20, y); y+=10;
+            doc.text("Omschrijving aanvraag:", 20, y); y+=10;
+            const oms = formData.get('omschrijving');
+            doc.text(oms, 20, y, { maxWidth: 170 }); y+=30;
 
-            const bankafschriften = formData.get('bankafschriften');
-            const dashboard = formData.get('dashboard');
-
-            if(bankafschriften && dashboard) {
+            const bankFile = formData.get('bankafschriften');
+            const dashFile = formData.get('dashboard');
+            if(bankFile && dashFile){
                 const reader1 = new FileReader();
-                reader1.onload = function(e1) {
+                reader1.onload = e1 => {
                     doc.addImage(e1.target.result, 'JPEG', 20, y, 80, 60);
                     const reader2 = new FileReader();
-                    reader2.onload = function(e2) {
+                    reader2.onload = e2 => {
                         doc.addImage(e2.target.result, 'JPEG', 110, y, 80, 60);
                         doc.save(`${formData.get('bedrijf')}_subsidie_aanvraag.pdf`);
                     };
-                    reader2.readAsDataURL(dashboard);
+                    reader2.readAsDataURL(dashFile);
                 };
-                reader1.readAsDataURL(bankafschriften);
+                reader1.readAsDataURL(bankFile);
             }
         });
+
+        updateSteps();
     </script>
 </body>
 </html>
