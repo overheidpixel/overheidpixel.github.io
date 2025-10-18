@@ -4,79 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subsidie Aanvraag Formulier</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-        h1 { color: #333; }
-        form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 600px; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc; }
-        button { margin-top: 20px; padding: 10px 20px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; }
-        button:hover { background: #0056b3; }
-    </style>
 </head>
 <body>
     <h1>Subsidie Aanvraag Formulier</h1>
 
     <form id="subsidieForm">
-        <label>Bedrijfsnaam:</label>
-        <input type="text" name="bedrijf" required>
-
-        <label>Eigenaar:</label>
-        <input type="text" name="eigenaar" required>
-
-        <label>Bankafschriften (upload foto):</label>
-        <input type="file" name="bankafschriften" accept="image/*" required>
-
-        <label>Financieel dashboard (bossmenu screenshot):</label>
-        <input type="file" name="dashboard" accept="image/*" required>
-
-        <label>Omschrijf je aanvraag:</label>
-        <textarea name="omschrijving" rows="5" required></textarea>
-
-        <button type="submit">Download aanvraag als PDF</button>
+        <!-- Formulier wordt dynamisch gevuld met JS -->
     </form>
+
+    <button id="submitBtn">Download aanvraag als PDF</button>
 
     <script>
         const { jsPDF } = window.jspdf;
 
-        document.getElementById('subsidieForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Hier kun je makkelijk vragen toevoegen of wijzigen
+        const vragen = [
+            { label: "Bedrijfsnaam", type: "text", name: "bedrijf", required: true },
+            { label: "Eigenaar", type: "text", name: "eigenaar", required: true },
+            { label: "Bankafschriften (upload foto)", type: "file", name: "bankafschriften", accept: "image/*", required: true },
+            { label: "Financieel dashboard (bossmenu screenshot)", type: "file", name: "dashboard", accept: "image/*", required: true },
+            { label: "Omschrijf je aanvraag", type: "textarea", name: "omschrijving", required: true }
+        ];
 
-            const form = e.target;
-            const bedrijf = form.bedrijf.value;
-            const eigenaar = form.eigenaar.value;
-            const omschrijving = form.omschrijving.value;
-            const bankafschriften = form.bankafschriften.files[0];
-            const dashboard = form.dashboard.files[0];
+        const form = document.getElementById('subsidieForm');
 
+        vragen.forEach(vraag => {
+            const label = document.createElement('label');
+            label.textContent = vraag.label;
+            form.appendChild(label);
+
+            let input;
+            if(vraag.type === "textarea") {
+                input = document.createElement('textarea');
+                input.rows = 5;
+            } else {
+                input = document.createElement('input');
+                input.type = vraag.type;
+                if(vraag.accept) input.accept = vraag.accept;
+            }
+            input.name = vraag.name;
+            if(vraag.required) input.required = true;
+
+            form.appendChild(input);
+        });
+
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const formData = new FormData(form);
             const doc = new jsPDF();
 
             doc.setFontSize(16);
             doc.text("Subsidie Aanvraag", 105, 20, null, null, 'center');
 
-            doc.setFontSize(12);
-            doc.text(`Bedrijfsnaam: ${bedrijf}`, 20, 40);
-            doc.text(`Eigenaar: ${eigenaar}`, 20, 50);
-            doc.text(`Omschrijving:`, 20, 60);
-            doc.text(`${omschrijving}`, 20, 70, { maxWidth: 170 });
+            let y = 40;
+            vragen.forEach(vraag => {
+                const value = formData.get(vraag.name);
+                if(vraag.type !== "file") {
+                    doc.setFontSize(12);
+                    doc.text(`${vraag.label}: ${value}`, 20, y);
+                    y += 10;
+                }
+            });
 
             // Voeg afbeeldingen toe
-            const reader1 = new FileReader();
-            reader1.onload = function(e1) {
-                const img1 = e1.target.result;
-                doc.addImage(img1, 'JPEG', 20, 120, 80, 60);
+            const bankafschriften = formData.get('bankafschriften');
+            const dashboard = formData.get('dashboard');
 
-                const reader2 = new FileReader();
-                reader2.onload = function(e2) {
-                    const img2 = e2.target.result;
-                    doc.addImage(img2, 'JPEG', 110, 120, 80, 60);
+            if(bankafschriften && dashboard) {
+                const reader1 = new FileReader();
+                reader1.onload = function(e1) {
+                    doc.addImage(e1.target.result, 'JPEG', 20, y, 80, 60);
 
-                    doc.save(`${bedrijf}_subsidie_aanvraag.pdf`);
+                    const reader2 = new FileReader();
+                    reader2.onload = function(e2) {
+                        doc.addImage(e2.target.result, 'JPEG', 110, y, 80, 60);
+                        doc.save(`${formData.get('bedrijf')}_subsidie_aanvraag.pdf`);
+                    };
+                    reader2.readAsDataURL(dashboard);
                 };
-                reader2.readAsDataURL(dashboard);
-            };
-            reader1.readAsDataURL(bankafschriften);
+                reader1.readAsDataURL(bankafschriften);
+            }
         });
     </script>
 </body>
