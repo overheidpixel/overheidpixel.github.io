@@ -144,36 +144,98 @@
             }
         }
 
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            const formData = new FormData(form);
-            const doc = new jsPDF();
-            doc.setFontSize(22);
-            doc.text("Subsidie Aanvraag", 105, 20, null, null, 'center');
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    const formData = new FormData(form);
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 20;
 
-            let y = 40;
-            doc.setFontSize(14);
-            doc.text(`Bedrijfsnaam: ${formData.get('bedrijf')}`, 20, y); y+=10;
-            doc.text(`Eigenaar: ${formData.get('eigenaar')}`, 20, y); y+=10;
-            doc.text("Omschrijving aanvraag:", 20, y); y+=10;
-            const oms = formData.get('omschrijving');
-            doc.text(oms, 20, y, { maxWidth: 170 }); y+=30;
+    // Header dossier
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Subsidie Aanvraag Dossier", pageWidth / 2, y, { align: 'center' });
+    y += 10;
 
-            const bankFile = formData.get('bankafschriften');
-            const dashFile = formData.get('dashboard');
-            if(bankFile && dashFile){
-                const reader1 = new FileReader();
-                reader1.onload = e1 => {
-                    doc.addImage(e1.target.result, 'JPEG', 20, y, 80, 60);
-                    const reader2 = new FileReader();
-                    reader2.onload = e2 => {
-                        doc.addImage(e2.target.result, 'JPEG', 110, y, 80, 60);
-                        doc.save(`${formData.get('bedrijf')}_subsidie_aanvraag.pdf`);
-                    };
-                    reader2.readAsDataURL(dashFile);
+    // Datum
+    const today = new Date();
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Datum: ${today.toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
+    y += 10;
+
+    doc.setLineWidth(0.5);
+    doc.line(20, y, pageWidth - 20, y); // horizontale lijn
+    y += 10;
+
+    // Bedrijfsinformatie sectie
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("1. Bedrijfsinformatie", 20, y);
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(`Bedrijfsnaam: ${formData.get('bedrijf')}`, 25, y); y+=8;
+    doc.text(`Eigenaar: ${formData.get('eigenaar')}`, 25, y); y+=15;
+
+    doc.line(20, y, pageWidth - 20, y); // scheidingslijn
+    y += 10;
+
+    // Aanvraag omschrijving
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("2. Omschrijving aanvraag", 20, y);
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    const oms = formData.get('omschrijving');
+    const omsLines = doc.splitTextToSize(oms, pageWidth - 40);
+    doc.text(omsLines, 25, y);
+    y += omsLines.length * 7 + 10;
+
+    doc.line(20, y, pageWidth - 20, y); // scheidingslijn
+    y += 10;
+
+    // Afbeeldingen sectie
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("3. Bijlagen", 20, y);
+    y += 8;
+
+    const bankFile = formData.get('bankafschriften');
+    const dashFile = formData.get('dashboard');
+
+    if(bankFile){
+        const reader1 = new FileReader();
+        reader1.onload = e1 => {
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            doc.text("Bankafschriften:", 25, y);
+            y += 5;
+            doc.addImage(e1.target.result, 'JPEG', 25, y, 80, 60);
+            y += 65;
+
+            if(dashFile){
+                const reader2 = new FileReader();
+                reader2.onload = e2 => {
+                    doc.text("Dashboard (bossmenu):", 25, y);
+                    y += 5;
+                    doc.addImage(e2.target.result, 'JPEG', 25, y, 80, 60);
+                    y += 65;
+
+                    // Opslaan
+                    doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
                 };
-                reader1.readAsDataURL(bankFile);
+                reader2.readAsDataURL(dashFile);
+            } else {
+                doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
             }
-        });
+        };
+        reader1.readAsDataURL(bankFile);
+    } else {
+        doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
+    }
+});
+
 
         updateSteps();
     </script>
