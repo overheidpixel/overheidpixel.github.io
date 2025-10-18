@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subsidie Aanvraag Formulier</title>
+    <title>Subsidie Aanvraag Formulier - FiveM</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -19,45 +19,130 @@
     </div>
 
     <form id="wizardForm">
-        <!-- Step 1: Bedrijf -->
+
+        <!-- Step 1: Bedrijfsinformatie -->
         <div class="form-step active">
             <h2><i class="fas fa-info-circle"></i> Bedrijfsinformatie</h2>
+
             <label>Bedrijfsnaam</label>
             <input type="text" name="bedrijf" required>
+
             <label>Eigenaar</label>
             <input type="text" name="eigenaar" required>
+
+            <label>Datum oprichting</label>
+            <input type="date" name="oprichting" required>
+
+            <label>Type bedrijf</label>
+            <select name="bedrijf_type" required>
+                <option value="">-- Kies een optie --</option>
+                <option value="taxi">Taxi bedrijf</option>
+                <option value="garage">Garage / Autohandel</option>
+                <option value="drugs">Legale handel</option>
+                <option value="restaurant">Restaurant / Café</option>
+                <option value="overig">Overig</option>
+            </select>
+
+            <label>Is het bedrijf al actief?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="actief" value="Ja" required> Ja</label>
+                <label><input type="radio" name="actief" value="Nee"> Nee</label>
+            </div>
+
+            <label>Aantal werknemers</label>
+            <input type="number" name="werknemers" min="0" step="1" required>
+
+            <label>Welke locaties gebruikt het bedrijf?</label>
+            <textarea name="locaties" rows="3" required></textarea>
+
             <div class="buttons">
                 <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
 
-        <!-- Step 2: Bankafschriften -->
+        <!-- Step 2: Financiële informatie -->
         <div class="form-step">
-            <h2><i class="fas fa-university"></i> Bankgegevens</h2>
+            <h2><i class="fas fa-university"></i> Financiële informatie</h2>
+
             <label>Bankafschriften (upload foto)</label>
             <input type="file" name="bankafschriften" accept="image/*" required>
             <img id="previewBank" src="" alt="Bankafschriften Preview">
+
             <label>Dashboard (bossmenu screenshot)</label>
             <input type="file" name="dashboard" accept="image/*" required>
             <img id="previewDashboard" src="" alt="Dashboard Preview">
+
+            <label>Huidige inkomsten (per week)</label>
+            <input type="number" name="inkomsten" min="0" step="50" required>
+
+            <label>Heeft u openstaande leningen?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="leningen" value="Ja" required> Ja</label>
+                <label><input type="radio" name="leningen" value="Nee"> Nee</label>
+            </div>
+
+            <label>Indien ja, bedrag:</label>
+            <input type="number" name="lening_bedrag" min="0" step="50">
+
+            <label>Heeft u eerder subsidies aangevraagd?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="vorige_subsidie" value="Ja" required> Ja</label>
+                <label><input type="radio" name="vorige_subsidie" value="Nee"> Nee</label>
+            </div>
+
+            <label>Eventuele opmerkingen bij financiële situatie</label>
+            <textarea name="fin_opmerkingen" rows="3"></textarea>
+
             <div class="buttons">
                 <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
                 <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
 
-        <!-- Step 3: Aanvraag -->
+        <!-- Step 3: Subsidie aanvraag -->
         <div class="form-step">
-            <h2><i class="fas fa-edit"></i> Omschrijving aanvraag</h2>
-            <label>Omschrijf je aanvraag</label>
-            <textarea name="omschrijving" rows="6" required></textarea>
+            <h2><i class="fas fa-edit"></i> Aanvraag details</h2>
+
+            <label>Doel van de subsidie</label>
+            <textarea name="doel" rows="4" required></textarea>
+
+            <label>Welke middelen zijn nodig? (meerdere keuzes mogelijk)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="middelen" value="Voertuigen"> Voertuigen</label>
+                <label><input type="checkbox" name="middelen" value="Apparatuur"> Apparatuur</label>
+                <label><input type="checkbox" name="middelen" value="Personeel"> Personeel</label>
+                <label><input type="checkbox" name="middelen" value="Andere"> Andere</label>
+            </div>
+
+            <label>Wat is het verwachte resultaat?</label>
+            <textarea name="resultaat" rows="3" required></textarea>
+
+            <label>Benodigde vergunningen aanwezig?</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="vergunningen" value="Ja"> Ja</label>
+                <label><input type="checkbox" name="vergunningen" value="Nee"> Nee</label>
+                <label><input type="checkbox" name="vergunningen" value="In aanvraag"> In aanvraag</label>
+            </div>
+
+            <label>Heeft u personeel in dienst? Zo ja, hoeveel?</label>
+            <input type="number" name="personeel" min="0" step="1" required>
+
+            <label>Eventuele eerdere ervaringen / referenties</label>
+            <textarea name="ervaringen" rows="4"></textarea>
+
+            <label>Wat zijn de geplande investeringen?</label>
+            <textarea name="investeringen" rows="3"></textarea>
+
+            <label>Wat is de gewenste uitbetalingstermijn?</label>
+            <input type="text" name="betalingstermijn" placeholder="Bijv. 2 weken">
+
             <div class="buttons">
                 <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Vorige</button>
                 <button type="button" class="next-btn">Volgende <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
 
-        <!-- Step 4: Preview & PDF -->
+        <!-- Step 4: Preview & Download -->
         <div class="form-step">
             <h2><i class="fas fa-file-pdf"></i> Preview & Download</h2>
             <div class="preview">
@@ -75,6 +160,7 @@
                 <button type="button" id="downloadBtn"><i class="fas fa-download"></i> Download PDF</button>
             </div>
         </div>
+
     </form>
 
     <script>
@@ -113,7 +199,7 @@
         });
 
         function validateStep(step){
-            const inputs = Array.from(step.querySelectorAll('input, textarea'));
+            const inputs = Array.from(step.querySelectorAll('input, textarea, select'));
             for(const input of inputs){
                 if(!input.checkValidity()) {
                     input.reportValidity();
@@ -144,98 +230,125 @@
             }
         }
 
-document.getElementById('downloadBtn').addEventListener('click', () => {
-    const formData = new FormData(form);
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let y = 20;
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const formData = new FormData(form);
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 20;
 
-    // Header dossier
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text("Subsidie Aanvraag Dossier", pageWidth / 2, y, { align: 'center' });
-    y += 10;
+            // Header
+            doc.setFontSize(20);
+            doc.setFont("helvetica", "bold");
+            doc.text("Subsidie Aanvraag Dossier", pageWidth / 2, y, { align: 'center' });
+            y += 10;
 
-    // Datum
-    const today = new Date();
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Datum: ${today.toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
-    y += 10;
-
-    doc.setLineWidth(0.5);
-    doc.line(20, y, pageWidth - 20, y); // horizontale lijn
-    y += 10;
-
-    // Bedrijfsinformatie sectie
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("1. Bedrijfsinformatie", 20, y);
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(`Bedrijfsnaam: ${formData.get('bedrijf')}`, 25, y); y+=8;
-    doc.text(`Eigenaar: ${formData.get('eigenaar')}`, 25, y); y+=15;
-
-    doc.line(20, y, pageWidth - 20, y); // scheidingslijn
-    y += 10;
-
-    // Aanvraag omschrijving
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("2. Omschrijving aanvraag", 20, y);
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    const oms = formData.get('omschrijving');
-    const omsLines = doc.splitTextToSize(oms, pageWidth - 40);
-    doc.text(omsLines, 25, y);
-    y += omsLines.length * 7 + 10;
-
-    doc.line(20, y, pageWidth - 20, y); // scheidingslijn
-    y += 10;
-
-    // Afbeeldingen sectie
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("3. Bijlagen", 20, y);
-    y += 8;
-
-    const bankFile = formData.get('bankafschriften');
-    const dashFile = formData.get('dashboard');
-
-    if(bankFile){
-        const reader1 = new FileReader();
-        reader1.onload = e1 => {
-            doc.setFontSize(12);
+            const today = new Date();
+            doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text("Bankafschriften:", 25, y);
-            y += 5;
-            doc.addImage(e1.target.result, 'JPEG', 25, y, 80, 60);
-            y += 65;
+            doc.text(`Datum: ${today.toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
+            y += 10;
+            doc.setLineWidth(0.5);
+            doc.line(20, y, pageWidth - 20, y);
+            y += 10;
 
-            if(dashFile){
-                const reader2 = new FileReader();
-                reader2.onload = e2 => {
-                    doc.text("Dashboard (bossmenu):", 25, y);
+            // Functie om meerdere vragen netjes toe te voegen
+            function addText(label, value){
+                if(!value) return;
+                const lines = doc.splitTextToSize(`${label}: ${value}`, pageWidth - 40);
+                doc.text(lines, 25, y);
+                y += lines.length * 7 + 3;
+            }
+
+            // Bedrijfsinformatie
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("1. Bedrijfsinformatie", 20, y);
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            addText("Bedrijfsnaam", formData.get('bedrijf'));
+            addText("Eigenaar", formData.get('eigenaar'));
+            addText("Datum oprichting", formData.get('oprichting'));
+            addText("Type bedrijf", formData.get('bedrijf_type'));
+            addText("Actief", formData.get('actief'));
+            addText("Aantal werknemers", formData.get('werknemers'));
+            addText("Locaties", formData.get('locaties'));
+
+            y += 5;
+            doc.line(20, y, pageWidth - 20, y);
+            y += 10;
+
+            // Financiële info
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("2. Financiële informatie", 20, y);
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            addText("Huidige inkomsten", formData.get('inkomsten'));
+            addText("Openstaande leningen", formData.get('leningen'));
+            addText("Lening bedrag", formData.get('lening_bedrag'));
+            addText("Eerdere subsidies aangevraagd", formData.get('vorige_subsidie'));
+            addText("Financiële opmerkingen", formData.get('fin_opmerkingen'));
+
+            y += 5;
+            doc.line(20, y, pageWidth - 20, y);
+            y += 10;
+
+            // Subsidie details
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("3. Subsidie aanvraag", 20, y);
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+
+            addText("Doel subsidie", formData.get('doel'));
+            addText("Middelen", formData.getAll('middelen').join(", "));
+            addText("Verwachte resultaat", formData.get('resultaat'));
+            addText("Vergunningen", formData.getAll('vergunningen').join(", "));
+            addText("Personeel in dienst", formData.get('personeel'));
+            addText("Ervaringen / referenties", formData.get('ervaringen'));
+            addText("Geplande investeringen", formData.get('investeringen'));
+            addText("Gewenste uitbetalingstermijn", formData.get('betalingstermijn'));
+
+            y += 5;
+            doc.line(20, y, pageWidth - 20, y);
+            y += 10;
+
+            // Afbeeldingen
+            const bankFile = formData.get('bankafschriften');
+            const dashFile = formData.get('dashboard');
+
+            if(bankFile){
+                const reader1 = new FileReader();
+                reader1.onload = e1 => {
+                    doc.text("Bankafschriften:", 25, y);
                     y += 5;
-                    doc.addImage(e2.target.result, 'JPEG', 25, y, 80, 60);
+                    doc.addImage(e1.target.result, 'JPEG', 25, y, 80, 60);
                     y += 65;
 
-                    // Opslaan
-                    doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
+                    if(dashFile){
+                        const reader2 = new FileReader();
+                        reader2.onload = e2 => {
+                            doc.text("Dashboard (bossmenu):", 25, y);
+                            y += 5;
+                            doc.addImage(e2.target.result, 'JPEG', 25, y, 80, 60);
+                            y += 65;
+                            doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
+                        };
+                        reader2.readAsDataURL(dashFile);
+                    } else {
+                        doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
+                    }
                 };
-                reader2.readAsDataURL(dashFile);
+                reader1.readAsDataURL(bankFile);
             } else {
                 doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
             }
-        };
-        reader1.readAsDataURL(bankFile);
-    } else {
-        doc.save(`${formData.get('bedrijf')}_subsidie_dossier.pdf`);
-    }
-});
-
+        });
 
         updateSteps();
     </script>
