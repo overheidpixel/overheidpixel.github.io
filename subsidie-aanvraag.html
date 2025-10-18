@@ -6,20 +6,45 @@
     <title>Subsidie Aanvraag Formulier</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </head>
 <body>
-    <h1>Subsidie Aanvraag Formulier</h1>
+    <header>
+        <h1>Subsidie Aanvraag Formulier</h1>
+        <p>Vul alle secties in om een volledig PDF-document te genereren</p>
+    </header>
 
     <form id="subsidieForm">
-        <!-- Formulier wordt dynamisch gevuld met JS -->
-    </form>
 
-    <button id="submitBtn">Download aanvraag als PDF</button>
+        <!-- Sectie 1: Bedrijfsinformatie -->
+        <section>
+            <h2><i class="fas fa-info-circle"></i> Bedrijfsinformatie</h2>
+        </section>
+
+        <!-- Dynamische vragen -->
+        <div id="formFields"></div>
+
+        <!-- Sectie 2: Preview afbeeldingen -->
+        <section>
+            <h2><i class="fas fa-image"></i> Preview uploads</h2>
+            <div class="preview">
+                <div>
+                    <label>Bankafschriften preview:</label>
+                    <img id="previewBank" src="" alt="Bankafschriften Preview">
+                </div>
+                <div>
+                    <label>Dashboard preview:</label>
+                    <img id="previewDashboard" src="" alt="Dashboard Preview">
+                </div>
+            </div>
+        </section>
+
+        <button type="button" id="submitBtn"><i class="fas fa-download"></i> Download aanvraag als PDF</button>
+    </form>
 
     <script>
         const { jsPDF } = window.jspdf;
 
-        // Hier kun je makkelijk vragen toevoegen of wijzigen
         const vragen = [
             { label: "Bedrijfsnaam", type: "text", name: "bedrijf", required: true },
             { label: "Eigenaar", type: "text", name: "eigenaar", required: true },
@@ -28,12 +53,11 @@
             { label: "Omschrijf je aanvraag", type: "textarea", name: "omschrijving", required: true }
         ];
 
-        const form = document.getElementById('subsidieForm');
-
+        const formFields = document.getElementById('formFields');
         vragen.forEach(vraag => {
             const label = document.createElement('label');
             label.textContent = vraag.label;
-            form.appendChild(label);
+            formFields.appendChild(label);
 
             let input;
             if(vraag.type === "textarea") {
@@ -47,27 +71,38 @@
             input.name = vraag.name;
             if(vraag.required) input.required = true;
 
-            form.appendChild(input);
+            if(vraag.type === "file") {
+                input.addEventListener('change', e => {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        if(vraag.name === "bankafschriften") document.getElementById('previewBank').src = ev.target.result;
+                        if(vraag.name === "dashboard") document.getElementById('previewDashboard').src = ev.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                });
+            }
+
+            formFields.appendChild(input);
         });
 
-        document.getElementById('submitBtn').addEventListener('click', function() {
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const form = document.getElementById('subsidieForm');
             const formData = new FormData(form);
             const doc = new jsPDF();
 
-            doc.setFontSize(16);
+            doc.setFontSize(22);
             doc.text("Subsidie Aanvraag", 105, 20, null, null, 'center');
 
             let y = 40;
             vragen.forEach(vraag => {
                 const value = formData.get(vraag.name);
                 if(vraag.type !== "file") {
-                    doc.setFontSize(12);
+                    doc.setFontSize(14);
                     doc.text(`${vraag.label}: ${value}`, 20, y);
                     y += 10;
                 }
             });
 
-            // Voeg afbeeldingen toe
             const bankafschriften = formData.get('bankafschriften');
             const dashboard = formData.get('dashboard');
 
@@ -75,7 +110,6 @@
                 const reader1 = new FileReader();
                 reader1.onload = function(e1) {
                     doc.addImage(e1.target.result, 'JPEG', 20, y, 80, 60);
-
                     const reader2 = new FileReader();
                     reader2.onload = function(e2) {
                         doc.addImage(e2.target.result, 'JPEG', 110, y, 80, 60);
