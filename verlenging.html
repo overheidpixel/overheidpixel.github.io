@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsidie / Uitkering Verlengen</title>
+    <link rel="stylesheet" href="verlenging.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="verlengen.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+</head>
+
+<body>
+    <header>
+        <h1>Verlenging Subsidie / Uitkering</h1>
+        <p>Upload je vorige aanvraag en voeg nieuwe gegevens toe</p>
+        <button class="home-btn" onclick="window.location.href='index.html'"><i class="fas fa-home"></i> Home</button>
+    </header>
+
+    <main>
+        <form id="verlengingForm" class="form-container">
+
+            <!-- Oude aanvraag -->
+            <section>
+                <h2><i class="fas fa-file-pdf"></i> Vorige aanvraag upload (verplicht)</h2>
+                <div class="drop-zone" id="dropZonePdf">
+                    <span class="drop-zone-text">Sleep je vorige PDF hierheen of klik om te uploaden</span>
+                    <input type="file" name="oude_pdf" accept="application/pdf" class="drop-zone-input" required>
+                </div>
+                <div class="preview" id="previewOudePdf"></div>
+            </section>
+
+            <!-- Bedrijfsinformatie -->
+            <section>
+                <h2><i class="fas fa-building"></i> Bedrijfsinformatie</h2>
+                <div class="input-group">
+                    <label>Bedrijfsnaam</label>
+                    <input type="text" name="bedrijf" required>
+                </div>
+                <div class="input-group">
+                    <label>Eigenaar</label>
+                    <input type="text" name="eigenaar" required>
+                </div>
+                <div class="input-group">
+                    <label>Datum oprichting</label>
+                    <input type="date" name="oprichting" required>
+                </div>
+                <div class="input-group">
+                    <label>Type bedrijf / uitkering</label>
+                    <select name="bedrijf_type" required>
+                        <option value="">-- Kies een optie --</option>
+                        <option value="subsidie">Subsidie</option>
+                        <option value="uitkering">Uitkering</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Financiële update -->
+            <section>
+                <h2><i class="fas fa-university"></i> Financiële update</h2>
+                <div class="input-group">
+                    <label>Huidige inkomsten per week</label>
+                    <input type="number" name="inkomsten" min="0" step="50" required>
+                </div>
+                <div class="input-group">
+                    <label>Eventuele nieuwe leningen</label>
+                    <input type="text" name="leningen">
+                </div>
+                <div class="input-group">
+                    <label>Opmerkingen financiële situatie</label>
+                    <textarea name="fin_opmerkingen" rows="2"></textarea>
+                </div>
+            </section>
+
+            <!-- Doel verlenging -->
+            <section>
+                <h2><i class="fas fa-edit"></i> Verlengingsaanvraag</h2>
+                <div class="input-group">
+                    <label>Doel van verlenging</label>
+                    <textarea name="doel" rows="3" required></textarea>
+                </div>
+                <div class="input-group checkbox-group">
+                    <label>Benodigde middelen</label>
+                    <label><input type="checkbox" name="middelen" value="Voertuigen"> Voertuigen</label>
+                    <label><input type="checkbox" name="middelen" value="Apparatuur"> Apparatuur</label>
+                    <label><input type="checkbox" name="middelen" value="Personeel"> Personeel</label>
+                    <label><input type="checkbox" name="middelen" value="Andere"> Andere</label>
+                </div>
+                <div class="input-group">
+                    <label>Verwachte resultaten</label>
+                    <textarea name="resultaat" rows="2"></textarea>
+                </div>
+            </section>
+
+            <!-- Upload nieuwe bewijsstukken -->
+            <section>
+                <h2><i class="fas fa-images"></i> Bewijsstukken uploaden</h2>
+                <div class="drop-zone" id="dropZoneImages">
+                    <span class="drop-zone-text">Sleep afbeeldingen (JPG, PNG) hierheen of klik om te uploaden</span>
+                    <input type="file" name="bewijsstukken" accept="image/*" multiple class="drop-zone-input">
+                </div>
+                <div class="preview" id="previewBewijs"></div>
+            </section>
+
+
+            <button type="button" id="downloadBtn" class="submit-btn"><i class="fas fa-download"></i> Download nieuwe
+                PDF</button>
+        </form>
+    </main>
+</body>
+
+</html>
