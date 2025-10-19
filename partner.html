@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discord Partnerschap Aanvraag</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+        }
+
+        header {
+            background: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            border-bottom: 3px solid #38bdf8;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select,
+        .home-btn {
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .home-btn {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+        }
+
+        .home-btn:hover {
+            background: #0ea5e9;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            border-left: 4px solid #38bdf8;
+            padding-left: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            background: #0f172a;
+            height: 8px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            height: 100%;
+            background: #38bdf8;
+            width: 0;
+            transition: width 0.4s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><i class="fa-brands fa-discord"></i> <span data-i18n="title">Discord Partnerschap Aanvraag</span></h1>
+        <div class="controls">
+            <a href="index.html" class="home-btn" data-i18n="home">Home</a>
+            <select id="language">
+                <option value="nl">🇳🇱 NL</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="de">🇩🇪 DE</option>
+            </select>
+        </div>
+    </header>
+
+    <main>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <form id="partnerForm">
+
+            <!-- Stap 1 -->
+            <div class="form-step active">
+                <h2 data-i18n="server_info">Server Informatie</h2>
+                <div class="form-group">
+                    <label data-i18n="server_name">Naam van de Discord Server</label>
+                    <input type="text" name="serverNaam" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="invite">Server Invite Link</label>
+                    <input type="url" name="inviteLink" placeholder="https://discord.gg/..." required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="members">Aantal Leden</label>
+                    <input type="number" name="ledenAantal" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="tag">Discord Tag</label>
+                    <input type="text" name="discordTag" required>
+                </div>
+                <div class="btns">
+                    <div></div>
+                    <button type="button" id="next1" data-i18n="next">Volgende</button>
+                </div>
+            </div>
+
+            <!-- Stap 2 -->
+            <div class="form-step">
+                <h2 data-i18n="goal">Doel & Community</h2>
+                <div class="form-group">
+                    <label data-i18n="purpose">Wat is het hoofddoel van jullie Discord server?</label>
+                    <textarea name="doel" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="community">Beschrijf jullie community, sfeer en activiteiten</label>
+                    <textarea name="beschrijving" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="unique">Wat maakt jullie server uniek?</label>
+                    <textarea name="uniek"></textarea>
+                </div>
+                <div class="btns">
+                    <button type="button" id="prev2" data-i18n="prev">Vorige</button>
+                    <button type="button" id="next2" data-i18n="next">Volgende</button>
+                </div>
+            </div>
+
+            <!-- Stap 3 -->
+            <div class="form-step">
+                <h2 data-i18n="moderation">Moderatie & Beleid</h2>
+                <div class="form-group">
+                    <label data-i18n="staff">Hoeveel moderators hebben jullie?</label>
+                    <input type="number" name="staffAantal">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="rules">Hebben jullie een duidelijk regelsysteem?</label>
+                    <select name="regels">
+                        <option>Ja</option>
+                        <option>Nee</option>
+                        <option>Gedeeltelijk</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="report">Hoe gaan jullie om met overtredingen?</label>
+                    <textarea name="beleid"></textarea>
+                </div>
+                <div class="btns">
+                    <button type="button" id="prev3" data-i18n="prev">Vorige</button>
+                    <button type="button" id="next3" data-i18n="next">Volgende</button>
+                </div>
+            </div>
+
+            <!-- Stap 4 -->
+            <div class="form-step">
+                <h2 data-i18n="partnership">Partnerschap & Motivatie</h2>
+                <div class="form-group">
+                    <label data-i18n="why">Waarom willen jullie een partnerschap?</label>
+                    <textarea name="motivatie" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="offer">Wat kunnen jullie bieden?</label>
+                    <textarea name="waarde" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="expect">Wat verwachten jullie terug?</label>
+                    <textarea name="verwachtingen" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="reputation">Hoe zouden andere servers jullie community omschrijven?</label>
+                    <textarea name="reputatie"></textarea>
+                </div>
+                <div class="btns">
+                    <button type="button" id="prev4" data-i18n="prev">Vorige</button>
+                    <button type="button" id="next4" data-i18n="next">Volgende</button>
+                </div>
+            </div>
+
+            <!-- Stap 5 -->
+            <div class="form-step">
+                <h2 data-i18n="final">Afronden & Verzenden</h2>
+                <div class="form-group">
+                    <label data-i18n="date">Datum van aanvraag</label>
+                    <input type="date" name="datum" required>
+                </div>
+                <p data-i18n="review">Controleer je gegevens voordat je de aanvraag afrondt. Je kunt daarna een PDF
+                    downloaden om te uploaden in je ticket.</p>
+                <div class="btns">
+                    <button type="button" id="prev5" data-i18n="prev">Vorige</button>
+                    <button type="button" id="genereerPDF"><i class="fa-solid fa-file-pdf"></i> <span
+                            data-i18n="generate_pdf">Genereer PDF</span></button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const steps = document.querySelectorAll(".form-step");
+        const progress = document.getElementById("progress");
+        let step = 0;
+
+        function updateSteps() {
+            steps.forEach((s, i) => s.classList.toggle("active", i === step));
+            progress.style.width = `${(step / (steps.length - 1)) * 100}%`;
+        }
+
+        document.getElementById("next1").onclick = () => { step++; updateSteps(); };
+        document.getElementById("next2").onclick = () => { step++; updateSteps(); };
+        document.getElementById("next3").onclick = () => { step++; updateSteps(); };
+        document.getElementById("next4").onclick = () => { step++; updateSteps(); };
+        document.getElementById("prev2").onclick = () => { step--; updateSteps(); };
+        document.getElementById("prev3").onclick = () => { step--; updateSteps(); };
+        document.getElementById("prev4").onclick = () => { step--; updateSteps(); };
+        document.getElementById("prev5").onclick = () => { step--; updateSteps(); };
+
+        // --- Vertalingen ---
+        const translations = {
+            nl: {
+                title: "Discord Partnerschap Aanvraag",
+                home: "Home",
+                server_info: "Server Informatie",
+                server_name: "Naam van de Discord Server",
+                invite: "Server Invite Link",
+                members: "Aantal Leden",
+                tag: "Discord Tag",
+                next: "Volgende",
+                prev: "Vorige",
+                goal: "Doel & Community",
+                purpose: "Wat is het hoofddoel van jullie Discord server?",
+                community: "Beschrijf jullie community, sfeer en activiteiten",
+                unique: "Wat maakt jullie server uniek?",
+                moderation: "Moderatie & Beleid",
+                staff: "Hoeveel moderators hebben jullie?",
+                rules: "Hebben jullie een duidelijk regelsysteem?",
+                report: "Hoe gaan jullie om met overtredingen?",
+                partnership: "Partnerschap & Motivatie",
+                why: "Waarom willen jullie een partnerschap?",
+                offer: "Wat kunnen jullie bieden?",
+                expect: "Wat verwachten jullie terug?",
+                reputation: "Hoe zouden andere servers jullie community omschrijven?",
+                final: "Afronden & Verzenden",
+                date: "Datum van aanvraag",
+                review: "Controleer je gegevens voordat je de aanvraag afrondt.",
+                generate_pdf: "Genereer PDF"
+            },
+            en: {
+                title: "Discord Partnership Application",
+                home: "Home",
+                server_info: "Server Information",
+                server_name: "Discord Server Name",
+                invite: "Server Invite Link",
+                members: "Number of Members",
+                tag: "Discord Tag",
+                next: "Next",
+                prev: "Previous",
+                goal: "Goal & Community",
+                purpose: "What is the main goal of your Discord server?",
+                community: "Describe your community, atmosphere, and activities",
+                unique: "What makes your server unique?",
+                moderation: "Moderation & Policy",
+                staff: "How many moderators do you have?",
+                rules: "Do you have a clear rule system?",
+                report: "How do you handle rule violations?",
+                partnership: "Partnership & Motivation",
+                why: "Why do you want a partnership?",
+                offer: "What can you offer?",
+                expect: "What do you expect in return?",
+                reputation: "How would other servers describe your community?",
+                final: "Finish & Submit",
+                date: "Application Date",
+                review: "Please review your information before finishing.",
+                generate_pdf: "Generate PDF"
+            },
+            de: {
+                title: "Discord Partnerschaftsanfrage",
+                home: "Startseite",
+                server_info: "Serverinformationen",
+                server_name: "Name des Discord-Servers",
+                invite: "Server-Einladungslink",
+                members: "Anzahl der Mitglieder",
+                tag: "Discord-Tag",
+                next: "Weiter",
+                prev: "Zurück",
+                goal: "Ziel & Community",
+                purpose: "Was ist das Hauptziel eures Discord-Servers?",
+                community: "Beschreibt eure Community, Atmosphäre und Aktivitäten",
+                unique: "Was macht euren Server einzigartig?",
+                moderation: "Moderation & Richtlinien",
+                staff: "Wie viele Moderatoren habt ihr?",
+                rules: "Habt ihr ein klares Regelsystem?",
+                report: "Wie geht ihr mit Regelverstößen um?",
+                partnership: "Partnerschaft & Motivation",
+                why: "Warum möchtet ihr eine Partnerschaft?",
+                offer: "Was könnt ihr anbieten?",
+                expect: "Was erwartet ihr als Gegenleistung?",
+                reputation: "Wie würden andere Server eure Community beschreiben?",
+                final: "Abschließen & Senden",
+                date: "Datum der Anfrage",
+                review: "Bitte überprüft eure Angaben, bevor ihr abschließt.",
+                generate_pdf: "PDF Erstellen"
+            }
+        };
+
+        const langSelect = document.getElementById("language");
+        const updateLang = (lang) => {
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                el.textContent = translations[lang][el.dataset.i18n];
+            });
+        };
+        langSelect.addEventListener("change", e => updateLang(e.target.value));
+        updateLang("nl");
+
+        // --- PDF ---
+        document.getElementById("genereerPDF").addEventListener("click", () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = new FormData(document.getElementById("partnerForm"));
+            let y = 10;
+            doc.text(translations[langSelect.value].title, 10, y);
+            y += 10;
+            data.forEach((v, k) => {
+                if (y > 270) { doc.addPage(); y = 10; }
+                doc.text(`${k}: ${v}`, 10, y);
+                y += 8;
+            });
+            doc.save(`Partnerschap_${data.get("serverNaam") || "aanvraag"}.pdf`);
+        });
+    </script>
+</body>
+
+</html>
