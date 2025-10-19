@@ -1,431 +1,1764 @@
 <!DOCTYPE html>
 <html lang="nl">
+<!--
+  Discord Partnerschap Aanvraag - uitgebreide versie
+  - Drietalig (NL / EN / DE)
+  - Multi-step wizard
+  - Zeer veel velden en regels
+  - Discord invite preview
+  - PDF export (jspdf)
+  - Client-side validation, autosave, import/export JSON
+  - Nette CSS + animaties
+  - Auteur: ChatGPT (prototype)
+-->
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discord Partnerschap Aanvraag</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Discord Partnerschap - Uitgebreide Aanvraag</title>
+
+    <!-- FontAwesome voor icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jsPDF voor PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
+        /* ============================
+       Root / kleuren / fonts
+       ============================ */
+        :root {
+            --bg: #071023;
+            --card: linear-gradient(180deg, rgba(22, 29, 38, 0.96), rgba(18, 22, 28, 0.96));
+            --panel: #0f1724;
+            --muted: #94a3b8;
+            --accent: #6ee7b7;
+            --accent-2: #60a5fa;
+            --danger: #fb7185;
+            --glass: rgba(255, 255, 255, 0.03);
+            --radius: 12px;
+            --shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+            --maxwidth: 1120px;
+            --sans: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* ============================
+       Reset + basics
+       ============================ */
+        * {
+            box-sizing: border-box
+        }
+
+        html,
         body {
-            font-family: "Poppins", sans-serif;
-            background: #0f172a;
-            color: #f8fafc;
+            height: 100%
+        }
+
+        body {
+            background:
+                radial-gradient(1200px 600px at 10% 10%, rgba(96, 165, 250, 0.05), transparent 8%),
+                radial-gradient(900px 500px at 90% 80%, rgba(110, 231, 183, 0.03), transparent 8%),
+                var(--bg);
+            color: #e6eef6;
+            font-family: var(--sans);
             margin: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: 1.4;
         }
 
-        header {
-            background: #1e293b;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 25px;
-            border-bottom: 3px solid #38bdf8;
-        }
-
-        header h1 {
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        select,
-        .home-btn {
-            background: #0f172a;
-            color: #f8fafc;
-            border: 1px solid #334155;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .home-btn {
-            background: #38bdf8;
-            color: #0f172a;
-            border: none;
-        }
-
-        .home-btn:hover {
-            background: #0ea5e9;
-        }
-
-        main {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #1e293b;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-
-        h2 {
-            border-left: 4px solid #38bdf8;
-            padding-left: 10px;
-            margin-bottom: 20px;
-        }
-
-        .form-step {
-            display: none;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-
-        .form-step.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            background: #0f172a;
-            color: #f8fafc;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            padding: 10px;
-            font-size: 1rem;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btns {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
+        a {
+            color: var(--accent-2);
+            text-decoration: none
         }
 
         button {
-            background: #38bdf8;
-            color: #0f172a;
-            border: none;
-            padding: 12px 20px;
+            font-family: var(--sans)
+        }
+
+        /* ============================
+       Page container
+       ============================ */
+        .page {
+            max-width: var(--maxwidth);
+            margin: 28px auto;
+            padding: 22px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        /* ============================
+       Sidebar (left) - title, language, progress
+       ============================ */
+        .sidebar {
+            background: var(--card);
+            padding: 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 24px;
+            height: fit-content;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .brand .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #021226;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 6px 18px rgba(6, 12, 24, 0.45), inset 0 -4px 8px rgba(255, 255, 255, 0.03);
+        }
+
+        .brand h1 {
+            font-size: 16px;
+            margin: 0
+        }
+
+        .brand p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .lang-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            align-items: center
+        }
+
+        .lang-select {
+            display: flex;
+            gap: 8px
+        }
+
+        .lang-btn {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 8px 10px;
             border-radius: 8px;
             cursor: pointer;
+            color: var(--muted);
             font-weight: 600;
-            font-size: 1.05rem;
-            transition: 0.2s;
+            font-size: 13px;
+            transition: all .15s ease;
         }
 
-        button:hover {
-            background: #0ea5e9;
+        .lang-btn.active {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            color: #e6fdf4;
+            box-shadow: 0 6px 18px rgba(6, 12, 24, 0.45), inset 0 -4px 8px rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        @keyframes fadeIn {
+        .home-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            align-items: center
+        }
+
+        .home-btn {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            color: #021226;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.06);
+        }
+
+        .progress {
+            margin-top: 18px;
+            height: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .progress>i {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            transition: width .35s ease;
+        }
+
+        .steps-list {
+            margin-top: 18px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all .18s ease;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .step-item.active {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            color: #e9fff6;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.4);
+        }
+
+        .step-item i {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-2)
+        }
+
+        .sidebar .notes {
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.45;
+            border-top: 1px dashed rgba(255, 255, 255, 0.03);
+            padding-top: 12px;
+        }
+
+        /* ============================
+       Main Panel (right) - wizard content
+       ============================ */
+        .panel {
+            background: var(--card);
+            padding: 22px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .panel .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .panel .panel-head h2 {
+            margin: 0;
+            font-size: 18px
+        }
+
+        .panel .panel-head .sub {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .panel .panel-content {
+            padding: 6px 0 0 0;
+        }
+
+        /* Wizard steps */
+        .wizard-step {
+            display: none;
+            animation: fadeUp .28s ease both;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(10px)
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: none
             }
         }
 
-        .progress-bar {
-            background: #0f172a;
-            height: 8px;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 25px;
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .progress {
-            height: 100%;
-            background: #38bdf8;
-            width: 0;
-            transition: width 0.4s ease;
+        .field-full {
+            grid-column: 1 / -1
+        }
+
+        .field {
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .field label {
+            display: block;
+            color: var(--muted);
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 13px
+        }
+
+        .field input[type="text"],
+        .field input[type="url"],
+        .field input[type="number"],
+        .field input[type="date"],
+        .field textarea,
+        .field select {
+            width: 100%;
+            background: #a19a902c;
+            border: none;
+            outline: none;
+            color: #ec9717;
+            font-size: 15px;
+            padding: 6px 0;
+        }
+
+        .field select:focus {
+            border-color: #999;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* opties zelf stylen */
+        .field select option {
+            background-color: #bb8a4be3;
+            /* lichtgrijs voor opties */
+            color: #555;
+            /* tekstkleur */
+            padding: 5px 10px;
+        }
+
+        .field textarea {
+            min-height: 110px;
+            resize: vertical
+        }
+
+        .note {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 8px
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .actions .left {
+            display: flex;
+            gap: 8px
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .16s ease;
+            font-weight: 700;
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            color: #021226;
+            border: none;
+            box-shadow: 0 10px 30px rgba(6, 12, 24, 0.45);
+        }
+
+        .btn.ghost {
+            background: transparent
+        }
+
+        .btn.warn {
+            background: linear-gradient(90deg, #f97316, #fb7185);
+            color: white;
+            border: none
+        }
+
+        /* Validation */
+        .error {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 6px
+        }
+
+        .ok {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 6px
+        }
+
+        /* Discord preview card */
+        .preview-card {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.02)
+        }
+
+        .preview-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #021226
+        }
+
+        .preview-meta h3 {
+            margin: 0;
+            font-size: 16px
+        }
+
+        .preview-meta p {
+            margin: 6px 0 0 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* review table */
+        .review-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px
+        }
+
+        .review-table td {
+            padding: 8px 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.02);
+            vertical-align: top
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        /* responsive */
+        @media (max-width:980px) {
+            .page {
+                grid-template-columns: 1fr;
+                padding: 12px
+            }
+
+            .sidebar {
+                position: relative;
+                top: auto
+            }
+
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* long rule list styling */
+        .long-rules {
+            max-height: 260px;
+            overflow: auto;
+            padding-right: 6px;
+            margin-top: 8px
+        }
+
+        .long-rules p {
+            margin: 10px 0;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .small-muted {
+            color: var(--muted);
+            font-size: 13px
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <h1><i class="fa-brands fa-discord"></i> <span data-i18n="title">Discord Partnerschap Aanvraag</span></h1>
-        <div class="controls">
-            <a href="index.html" class="home-btn" data-i18n="home">Home</a>
-            <select id="language">
-                <option value="nl">🇳🇱 NL</option>
-                <option value="en">🇬🇧 EN</option>
-                <option value="de">🇩🇪 DE</option>
-            </select>
-        </div>
-    </header>
 
-    <main>
-        <div class="progress-bar">
-            <div class="progress" id="progress"></div>
-        </div>
+    <div class="page">
 
-        <form id="partnerForm">
-
-            <!-- Stap 1 -->
-            <div class="form-step active">
-                <h2 data-i18n="server_info">Server Informatie</h2>
-                <div class="form-group">
-                    <label data-i18n="server_name">Naam van de Discord Server</label>
-                    <input type="text" name="serverNaam" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="invite">Server Invite Link</label>
-                    <input type="url" name="inviteLink" placeholder="https://discord.gg/..." required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="members">Aantal Leden</label>
-                    <input type="number" name="ledenAantal" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="tag">Discord Tag</label>
-                    <input type="text" name="discordTag" required>
-                </div>
-                <div class="btns">
-                    <div></div>
-                    <button type="button" id="next1" data-i18n="next">Volgende</button>
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar" aria-label="Sidebar">
+            <div class="brand">
+                <div class="logo">DP</div>
+                <div>
+                    <h1>Discord Partnerschap</h1>
+                    <p class="small-muted">Uitgebreide aanvraag — NL / EN / DE</p>
                 </div>
             </div>
 
-            <!-- Stap 2 -->
-            <div class="form-step">
-                <h2 data-i18n="goal">Doel & Community</h2>
-                <div class="form-group">
-                    <label data-i18n="purpose">Wat is het hoofddoel van jullie Discord server?</label>
-                    <textarea name="doel" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="community">Beschrijf jullie community, sfeer en activiteiten</label>
-                    <textarea name="beschrijving" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="unique">Wat maakt jullie server uniek?</label>
-                    <textarea name="uniek"></textarea>
-                </div>
-                <div class="btns">
-                    <button type="button" id="prev2" data-i18n="prev">Vorige</button>
-                    <button type="button" id="next2" data-i18n="next">Volgende</button>
+            <div class="lang-row" role="tablist" aria-label="Language selector">
+                <div class="lang-select" id="langButtons">
+                    <button class="lang-btn active" data-lang="nl">🇳🇱 NL</button>
+                    <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+                    <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
                 </div>
             </div>
 
-            <!-- Stap 3 -->
-            <div class="form-step">
-                <h2 data-i18n="moderation">Moderatie & Beleid</h2>
-                <div class="form-group">
-                    <label data-i18n="staff">Hoeveel moderators hebben jullie?</label>
-                    <input type="number" name="staffAantal">
+            <div class="home-row" style="margin-top:14px">
+                <button class="home-btn" id="goHomeBtn"><i class="fa-solid fa-house"></i> <span
+                        id="homeLabel">Home</span></button>
+                <a href="index.html" class="home-btn" data-i18n="home">Home</a>
+
+                <button class="btn" id="importJsonBtn" title="Importeer opgeslagen aanvraag (JSON)"><i
+                        class="fa-solid fa-file-import"></i> Import</button>
+            </div>
+
+            <div style="margin-top:18px">
+                <div class="progress"><i id="progressBar"></i></div>
+            </div>
+
+            <div class="steps-list" aria-hidden="false">
+                <div class="step-item active" data-step="1"><i class="fa-solid fa-file-lines"></i>
+                    <div><strong id="s1">Regels & Akkoord</strong>
+                        <div class="small-muted">Lees en accepteer regels</div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label data-i18n="rules">Hebben jullie een duidelijk regelsysteem?</label>
-                    <select name="regels">
-                        <option>Ja</option>
-                        <option>Nee</option>
-                        <option>Gedeeltelijk</option>
-                    </select>
+                <div class="step-item" data-step="2"><i class="fa-solid fa-server"></i>
+                    <div><strong id="s2">Server & Invite</strong>
+                        <div class="small-muted">Servergegevens & preview</div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label data-i18n="report">Hoe gaan jullie om met overtredingen?</label>
-                    <textarea name="beleid"></textarea>
+                <div class="step-item" data-step="3"><i class="fa-solid fa-people-group"></i>
+                    <div><strong id="s3">Community & Activiteiten</strong>
+                        <div class="small-muted">Doel, events & metrics</div>
+                    </div>
                 </div>
-                <div class="btns">
-                    <button type="button" id="prev3" data-i18n="prev">Vorige</button>
-                    <button type="button" id="next3" data-i18n="next">Volgende</button>
+                <div class="step-item" data-step="4"><i class="fa-solid fa-shield-halved"></i>
+                    <div><strong id="s4">Moderatie & Veiligheid</strong>
+                        <div class="small-muted">Moderation, rules & tools</div>
+                    </div>
+                </div>
+                <div class="step-item" data-step="5"><i class="fa-solid fa-handshake-simple"></i>
+                    <div><strong id="s5">Partnerschap</strong>
+                        <div class="small-muted">Motivatie & aanbod</div>
+                    </div>
+                </div>
+                <div class="step-item" data-step="6"><i class="fa-solid fa-check-to-slot"></i>
+                    <div><strong id="s6">Review & PDF</strong>
+                        <div class="small-muted">Bekijk en exporteer</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Stap 4 -->
-            <div class="form-step">
-                <h2 data-i18n="partnership">Partnerschap & Motivatie</h2>
-                <div class="form-group">
-                    <label data-i18n="why">Waarom willen jullie een partnerschap?</label>
-                    <textarea name="motivatie" required></textarea>
+            <div class="notes">
+                <strong class="small">Belangrijk:</strong>
+                <p class="small-muted">Deze aanvraag is bedoeld voor serieuze partnerschappen. Vul eerlijk en volledig
+                    in. Onjuiste informatie kan leiden tot afwijzing of verwijdering.</p>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:8px;">
+                <button class="btn" id="exportJsonBtn" title="Exporteer ingevulde aanvraag">Export JSON</button>
+                <button class="btn warn" id="resetBtn" title="Alles resetten">Reset</button>
+            </div>
+        </aside>
+
+        <!-- MAIN PANEL -->
+        <main class="panel" role="main">
+            <div class="panel-head">
+                <div>
+                    <h2 id="panelTitle">Partnerschapsaanvraag</h2>
+                    <div class="sub" id="panelSub">Stap-voor-stap formulier — vul goed in</div>
                 </div>
-                <div class="form-group">
-                    <label data-i18n="offer">Wat kunnen jullie bieden?</label>
-                    <textarea name="waarde" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="expect">Wat verwachten jullie terug?</label>
-                    <textarea name="verwachtingen" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="reputation">Hoe zouden andere servers jullie community omschrijven?</label>
-                    <textarea name="reputatie"></textarea>
-                </div>
-                <div class="btns">
-                    <button type="button" id="prev4" data-i18n="prev">Vorige</button>
-                    <button type="button" id="next4" data-i18n="next">Volgende</button>
+                <div>
+                    <div class="small-muted" id="langIndicator">Taal: Nederlands</div>
                 </div>
             </div>
 
-            <!-- Stap 5 -->
-            <div class="form-step">
-                <h2 data-i18n="final">Afronden & Verzenden</h2>
-                <div class="form-group">
-                    <label data-i18n="date">Datum van aanvraag</label>
-                    <input type="date" name="datum" required>
-                </div>
-                <p data-i18n="review">Controleer je gegevens voordat je de aanvraag afrondt. Je kunt daarna een PDF
-                    downloaden om te uploaden in je ticket.</p>
-                <div class="btns">
-                    <button type="button" id="prev5" data-i18n="prev">Vorige</button>
-                    <button type="button" id="genereerPDF"><i class="fa-solid fa-file-pdf"></i> <span
-                            data-i18n="generate_pdf">Genereer PDF</span></button>
-                </div>
-            </div>
-        </form>
-    </main>
+            <div class="panel-content">
+                <!-- WIZARD STEP 1: RULES -->
+                <section id="step-1" class="wizard-step active" aria-labelledby="s1">
+                    <h3>📜 <span id="rulesHeader">Regels & Voorwaarden</span></h3>
+                    <p class="small-muted" id="rulesIntro">Lees de regels zorgvuldig. Je kunt niet verder totdat je
+                        akkoord gaat.</p>
 
+                    <div class="field field-full">
+                        <label for="rulesListLabel" class="small-muted">Uitgebreide regels (verplicht):</label>
+                        <div class="long-rules" id="rulesList" aria-live="polite">
+                            <!-- lange regels worden dynamisch ingevuld per taal -->
+                        </div>
+
+                        <div style="margin-top:12px">
+                            <label style="display:flex;align-items:center;gap:10px">
+                                <input type="checkbox" id="acceptRules" style="width:18px;height:18px">
+                                <span id="acceptText" class="small-muted">Ik heb de regels gelezen en ga akkoord</span>
+                            </label>
+                            <div id="ruleError" class="error" style="display:none">Je moet akkoord gaan om verder te
+                                gaan.</div>
+                        </div>
+
+                        <div class="note">Tip: regels bevatten voorwaarden zoals minimum aantal leden en
+                            leeftijdsrestricties — zorg dat je server voldoet.</div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="left">
+                            <button class="btn" id="saveDraft1"><i class="fa-solid fa-floppy-disk"></i> Sla concept
+                                op</button>
+                        </div>
+                        <div>
+                            <button class="btn primary" id="toStep2">Stap 2: Server & Invite →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WIZARD STEP 2: SERVER & INVITE -->
+                <section id="step-2" class="wizard-step" aria-labelledby="s2">
+                    <h3>🖥️ <span id="serverHeader">Server & Invite</span></h3>
+                    <p class="small-muted">Voer de officiële invite in zodat we je server-preview kunnen tonen.</p>
+
+                    <div class="field-grid">
+                        <div class="field">
+                            <label id="labelServerName">Naam van de server</label>
+                            <input type="text" id="serverName" name="serverName" placeholder="Bijv. Mijn Community" />
+                            <div class="note small-muted">Exacte naam zoals op Discord.</div>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelInvite">Discord invite (discord.gg/... of invite link)</label>
+                            <input type="url" id="inviteInput" name="inviteInput"
+                                placeholder="https://discord.gg/abc123" />
+                            <div class="note small-muted">We proberen automatisch metadata te laden — zet de
+                                server-widget aan indien nodig.</div>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelMembers">Aantal leden (ongeveer)</label>
+                            <input type="number" id="memberCount" name="memberCount" min="0" placeholder="Bijv. 4200" />
+                        </div>
+
+                        <div class="field">
+                            <label id="labelAge">Leeftijdsrestrictie (min)</label>
+                            <select id="minAge" name="minAge">
+                                <option value="">Geen</option>
+                                <option value="13">13+</option>
+                                <option value="16">16+</option>
+                                <option value="18">18+</option>
+                            </select>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelShortDesc">Korte beschrijving (1-2 regels)</label>
+                            <input type="text" id="shortDesc" name="shortDesc"
+                                placeholder="Korte pitch van je community" />
+                            <div class="note small-muted">Deze tekst wordt in de preview gebruikt als korte
+                                samenvatting.</div>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelSocials">Links en socials (opsomming, gescheiden door komma)</label>
+                            <input type="text" id="socialLinks" name="socialLinks"
+                                placeholder="https://twitter.com/... , https://instagram.com/..." />
+                            <div class="note small-muted">Voeg je website, Twitter, YouTube, Twitch of andere relevante
+                                links toe.</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="small-muted">Server preview:</label>
+                        <div id="previewContainer" class="preview-card" aria-live="polite">
+                            <div class="preview-avatar" id="previewAvatar">DC</div>
+                            <div class="preview-meta">
+                                <h3 id="previewName">Geen invite geladen</h3>
+                                <p id="previewCount" class="small-muted">Voer een invite in om ledenaantal en
+                                    beschrijving te laden</p>
+                                <p id="previewDesc" class="small-muted"></p>
+                                <p id="previewStatus" class="small-muted"></p>
+                                <div style="margin-top:8px"><small id="previewNote" class="small-muted">Indien de
+                                        Discord API geen data teruggeeft, controleer dan de server-widget
+                                        instellingen.</small></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="left">
+                            <button class="btn" id="backTo1"><i class="fa-solid fa-chevron-left"></i> Terug</button>
+                            <button class="btn" id="saveDraft2"><i class="fa-solid fa-floppy-disk"></i> Sla concept
+                                op</button>
+                        </div>
+                        <div>
+                            <button class="btn primary" id="toStep3">Stap 3: Community →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WIZARD STEP 3: COMMUNITY & ACTIVITEITEN -->
+                <section id="step-3" class="wizard-step" aria-labelledby="s3">
+                    <h3>👥 <span id="communityHeader">Community & Activiteiten</span></h3>
+                    <p class="small-muted">Vertel ons over je community, events en engagement.</p>
+
+                    <div class="field-grid">
+                        <div class="field">
+                            <label id="labelAudience">Doelgroep / Audience</label>
+                            <select id="audience" name="audience">
+                                <option value="">Kies doelgroep</option>
+                                <option value="gaming">Gaming</option>
+                                <option value="tech">Tech / Development</option>
+                                <option value="creative">Creatief / Design</option>
+                                <option value="social">Social / Community</option>
+                                <option value="education">Onderwijs</option>
+                                <option value="business">Business / Support</option>
+                                <option value="other">Anders</option>
+                            </select>
+                            <div class="note small-muted">Kies de beste match voor je server.</div>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelActivityLevel">Activiteitsniveau</label>
+                            <select id="activityLevel" name="activityLevel">
+                                <option value="">Kies activiteit</option>
+                                <option value="very-high">Zeer actief (dagelijkse events)</option>
+                                <option value="high">Actief (dagelijkse interactie)</option>
+                                <option value="moderate">Gemiddeld (wekelijkse events)</option>
+                                <option value="low">Laag</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelEvents">Georganiseerde events / activiteiten</label>
+                            <select id="events" name="events" multiple>
+                                <option value="tournaments">Toernooien</option>
+                                <option value="giveaways">Giveaways</option>
+                                <option value="workshops">Workshops / Tutorials</option>
+                                <option value="streams">Streams / Watch parties</option>
+                                <option value="communitygames">Community game nights</option>
+                            </select>
+                            <div class="note small-muted">Houd Ctrl/Cmd ingedrukt om meerdere opties te selecteren.
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelVolunteer">Vrijwilligers / organisers</label>
+                            <input type="number" id="organisersCount" name="organisersCount" min="0"
+                                placeholder="Bijv. 5" />
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelStrengths">Wat zijn de sterkste punten van jullie community?
+                                (opsomming)</label>
+                            <textarea id="strengths" name="strengths"
+                                placeholder="Bijv. vriendelijke leden, veel events, educatieve content..."></textarea>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelWeaknesses">Waar wil je verbeteren? (transparantie helpt)</label>
+                            <textarea id="weaknesses" name="weaknesses"
+                                placeholder="Bijv. moderatie capaciteit, content planning..."></textarea>
+                            <div class="note small-muted">We waarderen eerlijkheid — dit helpt bij beoordeling.</div>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelQuya">Kwaliteitsscreening (quya) — beoordeel 1-5 en motiveer</label>
+                            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+                                <select id="quyaScore" name="quyaScore">
+                                    <option value="">Score</option>
+                                    <option value="1">1 - Zeer laag</option>
+                                    <option value="2">2 - Laag</option>
+                                    <option value="3">3 - Gemiddeld</option>
+                                    <option value="4">4 - Goed</option>
+                                    <option value="5">5 - Uitmuntend</option>
+                                </select>
+                                <input type="text" id="quyaShort" name="quyaShort" placeholder="Kort argument / 1 zin"
+                                    style="flex:1" />
+                            </div>
+                            <textarea id="quyaExplain" name="quyaExplain"
+                                placeholder="Gedetailleerde uitleg waarom je deze score geeft..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="left">
+                            <button class="btn" id="backTo2"><i class="fa-solid fa-chevron-left"></i> Terug</button>
+                            <button class="btn" id="saveDraft3"><i class="fa-solid fa-floppy-disk"></i> Sla concept
+                                op</button>
+                        </div>
+                        <div>
+                            <button class="btn primary" id="toStep4">Stap 4: Moderatie & Veiligheid →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WIZARD STEP 4: MODERATIE & VEILIGHEID -->
+                <section id="step-4" class="wizard-step" aria-labelledby="s4">
+                    <h3>🛡️ <span id="moderationHeader">Moderatie & Veiligheid</span></h3>
+                    <p class="small-muted">Beoordeel jullie mod-setup en veiligheidsmaatregelen.</p>
+
+                    <div class="field-grid">
+                        <div class="field">
+                            <label id="labelModTools">Gebruikte moderation bots / tools</label>
+                            <input type="text" id="modTools" name="modTools" placeholder="Bijv. MEE6, Dyno, YAGPDB" />
+                        </div>
+
+                        <div class="field">
+                            <label id="labelModCount">Totaal aantal moderators / staff</label>
+                            <input type="number" id="modCount" name="modCount" min="0" />
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelModerationPolicy">Moderation policy (korte samenvatting)</label>
+                            <textarea id="moderationPolicy" name="moderationPolicy"
+                                placeholder="Hoe handelen moderators? waarschuwingen, bans, appeals..."></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelAppeals">Is er een appeals-proces?</label>
+                            <select id="appeals" name="appeals">
+                                <option value="">Kies</option>
+                                <option value="yes">Ja</option>
+                                <option value="no">Nee</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelLogs">Wordt moderation gelogd (audit logs)?</label>
+                            <select id="auditLogs" name="auditLogs">
+                                <option value="">Kies</option>
+                                <option value="yes">Ja</option>
+                                <option value="no">Nee</option>
+                            </select>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelSafety">Veiligheidsmaatregelen (anti-spam / verification / automod)</label>
+                            <textarea id="safetyMeasures" name="safetyMeasures"
+                                placeholder="Bijv. captcha via bot, rank-based access, automod filters..."></textarea>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelIncidents">Zijn er recente incidenten (misconduct, hacks)? (beschrijf
+                                kort)</label>
+                            <textarea id="incidents" name="incidents"
+                                placeholder="Voeg korte toelichting toe, indien van toepassing"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="left">
+                            <button class="btn" id="backTo3"><i class="fa-solid fa-chevron-left"></i> Terug</button>
+                            <button class="btn" id="saveDraft4"><i class="fa-solid fa-floppy-disk"></i> Sla concept
+                                op</button>
+                        </div>
+                        <div>
+                            <button class="btn primary" id="toStep5">Stap 5: Partnerschap →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WIZARD STEP 5: PARTNERSCHAP -->
+                <section id="step-5" class="wizard-step" aria-labelledby="s5">
+                    <h3>🤝 <span id="partnerHeader">Partnerschap & Voorstel</span></h3>
+                    <p class="small-muted">Laat ons weten wat je kunt bieden en wat je verwacht.</p>
+
+                    <div class="field-grid">
+                        <div class="field field-full">
+                            <label id="labelMotivation">Motivatie - Waarom partner met ons?</label>
+                            <textarea id="motivation" name="motivation"
+                                placeholder="Beschrijf waarom jullie een partnerschap zoeken en welke synergie er is"></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelOffer">Wat bieden jullie? (opsomming)</label>
+                            <input type="text" id="offer1" name="offer1"
+                                placeholder="Bijv. crosspromotie, events, unieke content" />
+                            <div class="note small-muted" style="margin-top:8px">Je kunt meerdere aanbiedingen in aparte
+                                velden zetten of komma's gebruiken.</div>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelReturn">Wat verwachten jullie terug?</label>
+                            <input type="text" id="expectation1" name="expectation1"
+                                placeholder="Bijv. link op website, speciale rol" />
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelHistory">Eerdere partnerschappen / referenties</label>
+                            <textarea id="partnerHistory" name="partnerHistory"
+                                placeholder="Omschrijf eerdere samenwerkingen, links naar voorbeelden of testimonials"></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label id="labelContact">Voorkeurscontact (discord tag / email)</label>
+                            <input type="text" id="preferredContact" name="preferredContact"
+                                placeholder="@Iemand#1234 of email@voorbeeld.nl" />
+                        </div>
+
+                        <div class="field">
+                            <label id="labelResponseTime">Gewenste responstijd</label>
+                            <select id="responseTime" name="responseTime">
+                                <option value="48h">Binnen 48 uur</option>
+                                <option value="5d">Binnen 5 werkdagen</option>
+                                <option value="negotiable">In overleg</option>
+                            </select>
+                        </div>
+
+                        <div class="field field-full">
+                            <label id="labelAdditional">Eventuele extra opmerkingen</label>
+                            <textarea id="additionalNotes" name="additionalNotes"
+                                placeholder="Alles wat relevant is voor de beoordeling..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="left">
+                            <button class="btn" id="backTo4"><i class="fa-solid fa-chevron-left"></i> Terug</button>
+                            <button class="btn" id="saveDraft5"><i class="fa-solid fa-floppy-disk"></i> Sla concept
+                                op</button>
+                        </div>
+                        <div>
+                            <button class="btn primary" id="toStep6">Stap 6: Review & Export →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WIZARD STEP 6: REVIEW & PDF -->
+                <section id="step-6" class="wizard-step" aria-labelledby="s6">
+                    <h3>✅ <span id="reviewHeader">Review & Export</span></h3>
+                    <p class="small-muted">Controleer je aanvraag. Je kunt als PDF downloaden of JSON exporteren voor
+                        later gebruik.</p>
+
+                    <div id="reviewBlock" style="margin-top:8px">
+                        <!-- Dynamische review content -->
+                        <table class="review-table" id="reviewTable"></table>
+                    </div>
+
+                    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <button class="btn" id="backTo5"><i class="fa-solid fa-chevron-left"></i> Terug</button>
+                        <button class="btn primary" id="downloadPdfBtn"><i class="fa-solid fa-file-pdf"></i> Download
+                            PDF</button>
+                        <button class="btn" id="downloadJsonBtn"><i class="fa-solid fa-file-arrow-down"></i> Download
+                            JSON</button>
+                        <button class="btn ghost" id="sendWebhookBtn"
+                            title="(optioneel) Verzenden naar webhook - server-side vereist"><i
+                                class="fa-solid fa-share-from-square"></i> Verzenden (webhook)</button>
+                        <div class="note small-muted" style="margin-left:auto">Auto-save: <span
+                                id="autosaveStatus">Ingeschakeld</span></div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts: logica, vertalingen, fetch discord invite, pdf, autosave, validatie -->
     <script>
-        const steps = document.querySelectorAll(".form-step");
-        const progress = document.getElementById("progress");
-        let step = 0;
-
-        function updateSteps() {
-            steps.forEach((s, i) => s.classList.toggle("active", i === step));
-            progress.style.width = `${(step / (steps.length - 1)) * 100}%`;
-        }
-
-        document.getElementById("next1").onclick = () => { step++; updateSteps(); };
-        document.getElementById("next2").onclick = () => { step++; updateSteps(); };
-        document.getElementById("next3").onclick = () => { step++; updateSteps(); };
-        document.getElementById("next4").onclick = () => { step++; updateSteps(); };
-        document.getElementById("prev2").onclick = () => { step--; updateSteps(); };
-        document.getElementById("prev3").onclick = () => { step--; updateSteps(); };
-        document.getElementById("prev4").onclick = () => { step--; updateSteps(); };
-        document.getElementById("prev5").onclick = () => { step--; updateSteps(); };
-
-        // --- Vertalingen ---
-        const translations = {
+        /* =============================================================
+           Data: vertalingen en uitgebreide regels (NL / EN / DE)
+           ============================================================= */
+        const TRANSLATIONS = {
             nl: {
-                title: "Discord Partnerschap Aanvraag",
-                home: "Home",
-                server_info: "Server Informatie",
-                server_name: "Naam van de Discord Server",
-                invite: "Server Invite Link",
-                members: "Aantal Leden",
-                tag: "Discord Tag",
-                next: "Volgende",
-                prev: "Vorige",
-                goal: "Doel & Community",
-                purpose: "Wat is het hoofddoel van jullie Discord server?",
-                community: "Beschrijf jullie community, sfeer en activiteiten",
-                unique: "Wat maakt jullie server uniek?",
-                moderation: "Moderatie & Beleid",
-                staff: "Hoeveel moderators hebben jullie?",
-                rules: "Hebben jullie een duidelijk regelsysteem?",
-                report: "Hoe gaan jullie om met overtredingen?",
-                partnership: "Partnerschap & Motivatie",
-                why: "Waarom willen jullie een partnerschap?",
-                offer: "Wat kunnen jullie bieden?",
-                expect: "Wat verwachten jullie terug?",
-                reputation: "Hoe zouden andere servers jullie community omschrijven?",
-                final: "Afronden & Verzenden",
-                date: "Datum van aanvraag",
-                review: "Controleer je gegevens voordat je de aanvraag afrondt.",
-                generate_pdf: "Genereer PDF"
+                home: "Try again",
+                panelTitle: "Partnerschapsaanvraag",
+                panelSub: "Stap-voor-stap formulier — vul correct en volledig in",
+                langIndicator: "Taal: Nederlands",
+                rulesHeader: "Regels & Voorwaarden",
+                rulesIntro: "Lees de regels zorgvuldig. Je kunt niet verder totdat je akkoord gaat.",
+                acceptText: "Ik heb de regels gelezen en ga akkoord",
+                rules: [
+                    "1) Geen roleplay-steden of roleplay-servers (RP) — deze worden standaard afgewezen.",
+                    "2) Geen NSFW, pornografische, of expliciet seks-gerelateerde inhoud toegestaan.",
+                    "3) Geen servers gericht op illegale activiteiten (inclusief hacking, drugs, copyright-inbreuk).",
+                    "4) Geen gokservers of servers die geld-weddenschappen of gokken promoten.",
+                    "5) Geen servers die haatdragende inhoud, extremisme of georganiseerde haat ondersteunen.",
+                    "6) Minimaal 100 echte actieve leden vereist (bots tellen niet).",
+                    "7) Server moet minimaal 30 dagen oud zijn en enige vorm van activiteit tonen.",
+                    "8) Duidelijke en publieke regels moeten aanwezig zijn in de server (rules channel).",
+                    "9) Moderatieteam met minimaal 2 actieve moderators aanbevolen.",
+                    "10) Transparantie over eerdere incidenten is verplicht — verbergen kan leiden tot weigering.",
+                    "11) Gebruik geen nepstatistieken, viewbots of fake accounts om aantallen op te krikken.",
+                    "12) Bots en automod moeten duidelijk geconfigureerd zijn (anti-spam / automod).",
+                    "13) Leeftijdsrestricties als van toepassing moeten duidelijk vermeld worden (13+/16+/18+).",
+                    "14) Partnerschapsaanvragen mogen niet worden ingezonden door servers die eerdere sancties hebben ontvangen zonder toelichting.",
+                    "15) Respecteer privacyregels: deel geen ongevraagde persoonlijke data van leden.",
+                    "16) Wij behouden ons het recht voor aanvragen te weigeren zonder opgave van reden."
+                ],
+                // labels for many fields (used below to set label text)
+                labels: {
+                    serverName: "Naam van de server",
+                    invite: "Discord invite link",
+                    members: "Aantal leden (ongeveer)",
+                    age: "Leeftijdsrestrictie",
+                    shortDesc: "Korte beschrijving",
+                    socials: "Socials / Links",
+                    audience: "Doelgroep",
+                    activity: "Activiteitsniveau",
+                    events: "Organiseerde events",
+                    organisers: "Aantal organisers",
+                    strengths: "Sterke punten",
+                    weaknesses: "Verbeterpunten",
+                    quyaScore: "Kwaliteitsscore (1-5)",
+                    quyaShort: "Kort argument",
+                    quyaExplain: "Uitleg kwaliteitsscore",
+                    modTools: "Gebruikte moderation bots / tools",
+                    modCount: "Aantal moderators",
+                    modPolicy: "Moderatiebeleid (kort)",
+                    appeals: "Appeals-proces?",
+                    auditLogs: "Audit logs ingeschakeld?",
+                    safety: "Veiligheidsmaatregelen (captcha/automod)",
+                    incidents: "Recente incidenten (kort)",
+                    motivation: "Waarom willen jullie een partnerschap?",
+                    offer: "Wat bieden jullie aan?",
+                    expectation: "Wat verwachten jullie terug?",
+                    history: "Eerdere partnerships / referenties",
+                    contact: "Voorkeurscontact (Discord tag / email)",
+                    responseTime: "Gewenste responstijd",
+                    additional: "Extra opmerkingen"
+                },
+                buttons: {
+                    toStep2: "Stap 2: Server & Invite →",
+                    toStep3: "Stap 3: Community →",
+                    toStep4: "Stap 4: Moderatie →",
+                    toStep5: "Stap 5: Partnerschap →",
+                    toStep6: "Stap 6: Review →",
+                    saveDraft: "Sla concept op",
+                    downloadPdf: "Download PDF",
+                    downloadJson: "Download JSON",
+                    export: "Export JSON",
+                    reset: "Reset alles"
+                },
+                preview: {
+                    noInvite: "Geen invite geladen",
+                    loading: "Laadt servergegevens...",
+                    error: "Kan servergegevens niet laden. Controleer invite of server-widget instellingen."
+                },
+                autosave: "Ingeschakeld"
             },
             en: {
-                title: "Discord Partnership Application",
-                home: "Home",
-                server_info: "Server Information",
-                server_name: "Discord Server Name",
-                invite: "Server Invite Link",
-                members: "Number of Members",
-                tag: "Discord Tag",
-                next: "Next",
-                prev: "Previous",
-                goal: "Goal & Community",
-                purpose: "What is the main goal of your Discord server?",
-                community: "Describe your community, atmosphere, and activities",
-                unique: "What makes your server unique?",
-                moderation: "Moderation & Policy",
-                staff: "How many moderators do you have?",
-                rules: "Do you have a clear rule system?",
-                report: "How do you handle rule violations?",
-                partnership: "Partnership & Motivation",
-                why: "Why do you want a partnership?",
-                offer: "What can you offer?",
-                expect: "What do you expect in return?",
-                reputation: "How would other servers describe your community?",
-                final: "Finish & Submit",
-                date: "Application Date",
-                review: "Please review your information before finishing.",
-                generate_pdf: "Generate PDF"
+                home: "Try again",
+                panelTitle: "Partnership Application",
+                panelSub: "Step-by-step form — fill in accurately",
+                langIndicator: "Language: English",
+                rulesHeader: "Rules & Terms",
+                rulesIntro: "Read the rules carefully. You cannot continue until you agree.",
+                acceptText: "I have read and agree to the rules",
+                rules: [
+                    "1) No roleplay cities or roleplay servers (RP) — these are typically declined.",
+                    "2) No NSFW, pornographic, or explicitly sexual content allowed.",
+                    "3) No servers focused on illegal activities (including hacking, drugs, copyright infringement).",
+                    "4) No gambling servers or servers promoting betting or gambling with money.",
+                    "5) No hate speech, extremism or organized hate allowed.",
+                    "6) Minimum 100 real active members required (bots do not count).",
+                    "7) Server must be at least 30 days old and show activity.",
+                    "8) Clear, public rules must be available inside the server (rules channel).",
+                    "9) Moderation team with at least 2 active moderators recommended.",
+                    "10) Transparency about prior incidents is required — hiding incidents may cause rejection.",
+                    "11) Do not use fake statistics, viewbots or fake accounts to inflate numbers.",
+                    "12) Bots and automod should be configured (anti-spam / automod).",
+                    "13) Age restrictions (if applicable) must be clearly stated (13+/16+/18+).",
+                    "14) Partnerships cannot be submitted by servers with prior sanctions without explanation.",
+                    "15) Respect privacy: do not share unsolicited personal data of members.",
+                    "16) We reserve the right to decline applications without providing reasons."
+                ],
+                labels: {
+                    serverName: "Server name",
+                    invite: "Discord invite link",
+                    members: "Member count (approx.)",
+                    age: "Age restriction",
+                    shortDesc: "Short description",
+                    socials: "Socials / Links",
+                    audience: "Audience",
+                    activity: "Activity level",
+                    events: "Organized events",
+                    organisers: "Number of organisers",
+                    strengths: "Strengths",
+                    weaknesses: "Weaknesses",
+                    quyaScore: "Quality score (1-5)",
+                    quyaShort: "Short reason",
+                    quyaExplain: "Explain quality score",
+                    modTools: "Used moderation bots / tools",
+                    modCount: "Number of moderators",
+                    modPolicy: "Moderation policy (short)",
+                    appeals: "Appeals process?",
+                    auditLogs: "Audit logs enabled?",
+                    safety: "Safety measures (captcha/automod)",
+                    incidents: "Recent incidents (short)",
+                    motivation: "Why do you want a partnership?",
+                    offer: "What do you offer?",
+                    expectation: "What do you expect in return?",
+                    history: "Previous partnerships / references",
+                    contact: "Preferred contact (Discord tag / email)",
+                    responseTime: "Desired response time",
+                    additional: "Additional notes"
+                },
+                buttons: {
+                    toStep2: "Step 2: Server & Invite →",
+                    toStep3: "Step 3: Community →",
+                    toStep4: "Step 4: Moderation →",
+                    toStep5: "Step 5: Partnership →",
+                    toStep6: "Step 6: Review →",
+                    saveDraft: "Save draft",
+                    downloadPdf: "Download PDF",
+                    downloadJson: "Download JSON",
+                    export: "Export JSON",
+                    reset: "Reset everything"
+                },
+                preview: {
+                    noInvite: "No invite loaded",
+                    loading: "Loading server data...",
+                    error: "Unable to load server data. Check invite or server widget settings."
+                },
+                autosave: "Enabled"
             },
             de: {
-                title: "Discord Partnerschaftsanfrage",
-                home: "Startseite",
-                server_info: "Serverinformationen",
-                server_name: "Name des Discord-Servers",
-                invite: "Server-Einladungslink",
-                members: "Anzahl der Mitglieder",
-                tag: "Discord-Tag",
-                next: "Weiter",
-                prev: "Zurück",
-                goal: "Ziel & Community",
-                purpose: "Was ist das Hauptziel eures Discord-Servers?",
-                community: "Beschreibt eure Community, Atmosphäre und Aktivitäten",
-                unique: "Was macht euren Server einzigartig?",
-                moderation: "Moderation & Richtlinien",
-                staff: "Wie viele Moderatoren habt ihr?",
-                rules: "Habt ihr ein klares Regelsystem?",
-                report: "Wie geht ihr mit Regelverstößen um?",
-                partnership: "Partnerschaft & Motivation",
-                why: "Warum möchtet ihr eine Partnerschaft?",
-                offer: "Was könnt ihr anbieten?",
-                expect: "Was erwartet ihr als Gegenleistung?",
-                reputation: "Wie würden andere Server eure Community beschreiben?",
-                final: "Abschließen & Senden",
-                date: "Datum der Anfrage",
-                review: "Bitte überprüft eure Angaben, bevor ihr abschließt.",
-                generate_pdf: "PDF Erstellen"
+                home: "Try again",
+                panelTitle: "Partnerschaftsanfrage",
+                panelSub: "Schritt-für-Schritt Formular — bitte korrekt ausfüllen",
+                langIndicator: "Sprache: Deutsch",
+                rulesHeader: "Regeln & Bedingungen",
+                rulesIntro: "Lesen Sie die Regeln sorgfältig. Sie können nicht fortfahren, bis Sie zustimmen.",
+                acceptText: "Ich habe die Regeln gelesen und stimme zu",
+                rules: [
+                    "1) Keine Roleplay-Städte oder Roleplay-Server (RP) — diese werden normalerweise abgelehnt.",
+                    "2) Kein NSFW-, pornographischer oder explizit sexueller Inhalt erlaubt.",
+                    "3) Keine Server, die sich auf illegale Aktivitäten konzentrieren (Hacking, Drogen, Copyright-Verletzung).",
+                    "4) Keine Glücksspiel-Server oder Server, die Wetten mit Geld fördern.",
+                    "5) Keine Hassrede, Extremismus oder organisierter Hass erlaubt.",
+                    "6) Mindestens 100 echte aktive Mitglieder erforderlich (Bots zählen nicht).",
+                    "7) Server muss mindestens 30 Tage alt sein und Aktivität zeigen.",
+                    "8) Klare, öffentliche Regeln müssen im Server vorhanden sein (rules channel).",
+                    "9) Moderationsteam mit mindestens 2 aktiven Moderatoren empfohlen.",
+                    "10) Transparenz über frühere Vorfälle ist erforderlich — das Verschweigen kann zur Ablehnung führen.",
+                    "11) Verwenden Sie keine gefälschten Statistiken, Viewbots oder Fake-Accounts.",
+                    "12) Bots und Automod sollten konfiguriert sein (Anti-Spam / Automod).",
+                    "13) Altersbeschränkungen (falls zutreffend) müssen klar angegeben sein (13+/16+/18+).",
+                    "14) Partnerschaftsanfragen von Servern mit früheren Sanktionen benötigen eine Erklärung.",
+                    "15) Datenschutz respektieren: Geben Sie keine unaufgeforderten persönlichen Daten von Mitgliedern weiter.",
+                    "16) Wir behalten uns das Recht vor, Anträge ohne Angabe von Gründen abzulehnen."
+                ],
+                labels: {
+                    serverName: "Servername",
+                    invite: "Discord Einladungslink",
+                    members: "Mitgliederanzahl (ca.)",
+                    age: "Altersbeschränkung",
+                    shortDesc: "Kurze Beschreibung",
+                    socials: "Sozialen / Links",
+                    audience: "Zielgruppe",
+                    activity: "Aktivitätslevel",
+                    events: "Veranstaltungen",
+                    organisers: "Anzahl Organisatoren",
+                    strengths: "Stärken",
+                    weaknesses: "Verbesserungspunkte",
+                    quyaScore: "Qualitätsbewertung (1-5)",
+                    quyaShort: "Kurzbegründung",
+                    quyaExplain: "Erklärung der Bewertung",
+                    modTools: "Genutzte Moderations-Bots / Tools",
+                    modCount: "Anzahl Moderatoren",
+                    modPolicy: "Moderationsrichtlinie (kurz)",
+                    appeals: "Beschwerdeverfahren?",
+                    auditLogs: "Audit-Logs aktiviert?",
+                    safety: "Sicherheitsmaßnahmen (captcha/automod)",
+                    incidents: "Aktuelle Vorfälle (kurz)",
+                    motivation: "Warum möchten Sie eine Partnerschaft?",
+                    offer: "Was bieten Sie an?",
+                    expectation: "Was erwarten Sie im Gegenzug?",
+                    history: "Bisherige Partnerschaften / Referenzen",
+                    contact: "Bevorzugter Kontakt (Discord tag / Email)",
+                    responseTime: "Gewünschte Antwortzeit",
+                    additional: "Weitere Anmerkungen"
+                },
+                buttons: {
+                    toStep2: "Schritt 2: Server & Invite →",
+                    toStep3: "Schritt 3: Community →",
+                    toStep4: "Schritt 4: Moderation →",
+                    toStep5: "Schritt 5: Partnerschaft →",
+                    toStep6: "Schritt 6: Review →",
+                    saveDraft: "Entwurf speichern",
+                    downloadPdf: "PDF herunterladen",
+                    downloadJson: "JSON herunterladen",
+                    export: "JSON exportieren",
+                    reset: "Alles zurücksetzen"
+                },
+                preview: {
+                    noInvite: "Keine Einladung geladen",
+                    loading: "Serverdaten werden geladen...",
+                    error: "Serverdaten konnten nicht geladen werden. Überprüfen Sie Einladung oder Widget-Einstellungen."
+                },
+                autosave: "Aktiv"
             }
         };
 
-        const langSelect = document.getElementById("language");
-        const updateLang = (lang) => {
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                el.textContent = translations[lang][el.dataset.i18n];
-            });
+        /* =============================================================
+           State + utility helpers
+           ============================================================= */
+        let LANG = 'nl';
+        const state = {
+            currentStep: 1,
+            autosaveKey: 'discord_partnership_draft_v1',
+            form: {} // will hold values
         };
-        langSelect.addEventListener("change", e => updateLang(e.target.value));
-        updateLang("nl");
 
-        // --- PDF ---
-        document.getElementById("genereerPDF").addEventListener("click", () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const data = new FormData(document.getElementById("partnerForm"));
-            let y = 10;
-            doc.text(translations[langSelect.value].title, 10, y);
-            y += 10;
-            data.forEach((v, k) => {
-                if (y > 270) { doc.addPage(); y = 10; }
-                doc.text(`${k}: ${v}`, 10, y);
-                y += 8;
+        // helper for selecting elements
+        const $ = (sel, parent = document) => parent.querySelector(sel);
+        const $$ = (sel, parent = document) => Array.from(parent.querySelectorAll(sel));
+
+        // initial DOM refs
+        const langButtons = $$('#langButtons .lang-btn');
+        const progressBar = $('#progressBar');
+        const stepItems = $$('.step-item');
+
+        // set initial language texts
+        function applyTranslations() {
+            const t = TRANSLATIONS[LANG];
+            $('#homeLabel').innerText = t.home;
+            $('#panelTitle').innerText = t.panelTitle;
+            $('#panelSub').innerText = t.panelSub;
+            $('#langIndicator').innerText = t.langIndicator;
+            $('#rulesHeader').innerText = t.rulesHeader;
+            $('#rulesIntro').innerText = t.rulesIntro;
+            $('#acceptText').innerText = t.acceptText;
+            $('#s1').innerText = t.rulesHeader;
+            $('#s2').innerText = LANG === 'nl' ? 'Server & Invite' : (LANG === 'en' ? 'Server & Invite' : 'Server & Invite');
+            $('#s3').innerText = LANG === 'nl' ? 'Community & Activiteiten' : (LANG === 'en' ? 'Community & Activities' : 'Community & Aktivitäten');
+            $('#s4').innerText = LANG === 'nl' ? 'Moderatie & Veiligheid' : (LANG === 'en' ? 'Moderation & Safety' : 'Moderation & Sicherheit');
+            $('#s5').innerText = LANG === 'nl' ? 'Partnerschap' : (LANG === 'en' ? 'Partnership' : 'Partnerschaft');
+            $('#s6').innerText = LANG === 'nl' ? 'Review & PDF' : (LANG === 'en' ? 'Review & PDF' : 'Review & PDF');
+
+            // set labels of many fields using t.labels
+            const L = t.labels;
+            if (L) {
+                $('#labelServerName').innerText = L.serverName;
+                $('#labelInvite').innerText = L.invite;
+                $('#labelMembers').innerText = L.members;
+                $('#labelAge').innerText = L.age;
+                $('#labelShortDesc').innerText = L.shortDesc;
+                $('#labelSocials').innerText = L.socials;
+
+                $('#labelAudience').innerText = L.audience;
+                $('#labelActivityLevel').innerText = L.activity;
+                $('#labelEvents').innerText = L.events;
+                $('#labelVolunteer').innerText = L.organisers;
+                $('#labelStrengths').innerText = L.strengths;
+                $('#labelWeaknesses').innerText = L.weaknesses;
+                $('#labelQuya').innerText = L.quyaScore;
+
+                $('#labelModTools').innerText = L.modTools;
+                $('#labelModCount').innerText = L.modCount;
+                $('#labelModerationPolicy').innerText = L.modPolicy;
+                $('#labelAppeals').innerText = L.appeals;
+                $('#labelLogs').innerText = L.auditLogs;
+                $('#labelSafety').innerText = L.safety;
+                $('#labelIncidents').innerText = L.incidents;
+
+                $('#labelMotivation').innerText = L.motivation;
+                $('#labelOffer').innerText = L.offer;
+                $('#labelReturn').innerText = L.expectation;
+                $('#labelHistory').innerText = L.history;
+                $('#labelContact').innerText = L.contact;
+                $('#labelResponseTime').innerText = L.responseTime;
+                $('#labelAdditional').innerText = L.additional;
+            }
+
+            // rules list
+            const ruleContainer = $('#rulesList');
+            ruleContainer.innerHTML = '';
+            TRANSLATIONS[LANG].rules.forEach((r) => {
+                const p = document.createElement('p'); p.textContent = r; ruleContainer.appendChild(p);
             });
-            doc.save(`Partnerschap_${data.get("serverNaam") || "aanvraag"}.pdf`);
+
+            // preview initial texts
+            $('#previewName').innerText = TRANSLATIONS[LANG].preview.noInvite;
+            $('#previewCount').innerText = '';
+            $('#previewDesc').innerText = '';
+            $('#previewStatus').innerText = '';
+            $('#previewNote').innerText = TRANSLATIONS[LANG].preview.loading;
+            $('#autosaveStatus').innerText = TRANSLATIONS[LANG].autosave;
+        }
+
+        // change language
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                langButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                LANG = btn.dataset.lang;
+                applyTranslations();
+            });
         });
+
+        // initialize translations
+        applyTranslations();
+
+        /* =============================================================
+           Wizard navigation helpers
+           ============================================================= */
+        function gotoStep(n) {
+            state.currentStep = n;
+            // show/hide steps
+            $$('.wizard-step').forEach((el, idx) => {
+                const stepIndex = idx + 1;
+                if (stepIndex === n) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            // update progress
+            const pct = ((n - 1) / 5) * 100;
+            progressBar.style.width = pct + '%';
+
+            // update sidebar active
+            stepItems.forEach(it => {
+                const stepVal = parseInt(it.dataset.step, 10);
+                if (stepVal === n) it.classList.add('active'); else it.classList.remove('active');
+            });
+
+            // scroll to top for mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // if review step, build review
+            if (n === 6) buildReview();
+        }
+
+        // Buttons navigation
+        $('#toStep2').addEventListener('click', () => {
+            if (!$('#acceptRules').checked) {
+                $('#ruleError').style.display = 'block';
+                return;
+            } else $('#ruleError').style.display = 'none';
+            saveDraft(); gotoStep(2);
+        });
+        $('#backTo1').addEventListener('click', () => gotoStep(1));
+        $('#toStep3').addEventListener('click', () => { saveDraft(); gotoStep(3) });
+        $('#backTo2').addEventListener('click', () => gotoStep(2));
+        $('#toStep4').addEventListener('click', () => { saveDraft(); gotoStep(4) });
+        $('#backTo3').addEventListener('click', () => gotoStep(3));
+        $('#toStep5').addEventListener('click', () => { saveDraft(); gotoStep(5) });
+        $('#backTo4').addEventListener('click', () => gotoStep(4));
+        $('#toStep6').addEventListener('click', () => { saveDraft(); gotoStep(6) });
+        $('#backTo5').addEventListener('click', () => gotoStep(5));
+
+        // Sidebar quick buttons
+        $('#goHomeBtn').addEventListener('click', () => { gotoStep(1) });
+        $('#resetBtn').addEventListener('click', () => {
+            if (!confirm("Weet je zeker dat je alles wilt resetten? Dit verwijdert opgeslagen concept.")) return;
+            localStorage.removeItem(state.autosaveKey);
+            // clear inputs
+            $$('input,textarea,select').forEach(i => { if (i.type !== 'button' && i.type !== 'submit') i.value = ''; if (i.type === 'checkbox') i.checked = false; });
+            // reset preview
+            $('#previewAvatar').innerText = 'DC';
+            $('#previewName').innerText = TRANSLATIONS[LANG].preview.noInvite;
+            $('#previewCount').innerText = '';
+            $('#previewDesc').innerText = '';
+            gotoStep(1);
+            alert('Reset voltooid.');
+        });
+
+        /* =============================================================
+           Preview: fetch Discord invite info
+           - tries to read invite code from URL and fetches:
+             https://discord.com/api/v9/invites/{code}?with_counts=true&with_expiration=true
+           - fallback to simple preview when fetch fails
+           ============================================================= */
+
+        let lastInvite = '';
+
+        async function previewInvite() {
+            const val = $('#inviteInput').value.trim();
+            lastInvite = val;
+            const previewName = $('#previewName');
+            const previewCount = $('#previewCount');
+            const previewDesc = $('#previewDesc');
+            const previewAvatar = $('#previewAvatar');
+            const t = TRANSLATIONS[LANG].preview;
+
+            if (!val) {
+                previewName.innerText = t.noInvite;
+                previewCount.innerText = '';
+                previewDesc.innerText = '';
+                $('#previewStatus').innerText = '';
+                return;
+            }
+
+            // try to extract invite code (discord.gg/ or discord.com/invite/)
+            let code = '';
+            try {
+                if (val.includes('discord.gg/')) code = val.split('discord.gg/')[1].split(/[/?#]/)[0];
+                else if (val.includes('discord.com/invite/')) code = val.split('discord.com/invite/')[1].split(/[/?#]/)[0];
+                else code = val; // maybe user pasted just the code
+            } catch (e) { code = val; }
+
+            previewName.innerText = t.loading;
+            previewCount.innerText = '';
+            previewDesc.innerText = '';
+            $('#previewStatus').innerText = '';
+
+            // fetch invite metadata
+            try {
+                const res = await fetch(`https://discord.com/api/v9/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`);
+                if (!res.ok) throw new Error('non-ok');
+                const data = await res.json();
+                // guild info present?
+                if (data && data.guild) {
+                    const g = data.guild;
+                    previewName.innerText = g.name || (g.id ? 'Discord server' : t.noInvite);
+                    previewCount.innerText = (data.approximate_member_count ? `${data.approximate_member_count} leden` : '');
+                    previewDesc.innerText = g.description || '';
+                    // avatar
+                    if (g.icon) {
+                        const url = `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png`;
+                        previewAvatar.style.backgroundImage = `url(${url})`;
+                        previewAvatar.style.backgroundSize = 'cover';
+                        previewAvatar.innerText = '';
+                    } else {
+                        previewAvatar.style.backgroundImage = '';
+                        previewAvatar.innerText = (g.name || 'DC').split('').slice(0, 2).join('').toUpperCase();
+                    }
+                    $('#previewStatus').innerText = '';
+                } else {
+                    // fallback when guild missing
+                    previewName.innerText = t.error;
+                    previewCount.innerText = '';
+                    previewDesc.innerText = '';
+                    $('#previewStatus').innerText = t.error;
+                }
+            } catch (err) {
+                // attempt a nicer fallback: just show the code plus shortdesc if present
+                previewName.innerText = val;
+                previewCount.innerText = '';
+                previewDesc.innerText = '';
+                $('#previewStatus').innerText = t.error;
+                previewAvatar.style.backgroundImage = '';
+                previewAvatar.innerText = 'DC';
+            }
+        }
+
+        // event on invite input
+        $('#inviteInput').addEventListener('input', debounce(previewInvite, 600));
+
+        /* =============================================================
+           Form persistence: autosave / save drafts / export JSON
+           ============================================================= */
+        function collectFormData() {
+            // collect relevant inputs
+            const data = {};
+            $$('input,textarea,select').forEach(el => {
+                if (!el.name && !el.id) return;
+                let key = el.name || el.id;
+                if (el.type === 'checkbox') data[key] = el.checked;
+                else data[key] = el.value;
+            });
+            data.__lang = LANG;
+            return data;
+        }
+
+        function loadDraft() {
+            const raw = localStorage.getItem(state.autosaveKey);
+            if (!raw) return false;
+            try {
+                const data = JSON.parse(raw);
+                // apply values
+                Object.keys(data).forEach(k => {
+                    const el = document.querySelector(`[name="${k}"], #${k}`);
+                    if (!el) return;
+                    if (el.type === 'checkbox') el.checked = data[k];
+                    else el.value = data[k];
+                });
+                if (data.__lang && ['nl', 'en', 'de'].includes(data.__lang)) {
+                    LANG = data.__lang;
+                    // mark active button
+                    langButtons.forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+                    applyTranslations();
+                }
+                // update preview if invite exists
+                if ($('#inviteInput').value) previewInvite();
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function saveDraft() {
+            const data = collectFormData();
+            try {
+                localStorage.setItem(state.autosaveKey, JSON.stringify(data));
+                $('#autosaveStatus').innerText = TRANSLATIONS[LANG].autosave;
+                return true;
+            } catch (e) { return false; }
+        }
+
+        // Save draft buttons
+        $('#saveDraft1').addEventListener('click', () => { saveDraft(); alert('Concept opgeslagen.'); });
+        $('#saveDraft2').addEventListener('click', () => { saveDraft(); alert('Concept opgeslagen.'); });
+        $('#saveDraft3').addEventListener('click', () => { saveDraft(); alert('Concept opgeslagen.'); });
+        $('#saveDraft4').addEventListener('click', () => { saveDraft(); alert('Concept opgeslagen.'); });
+        $('#saveDraft5').addEventListener('click', () => { saveDraft(); alert('Concept opgeslagen.'); });
+
+        // autosave interval
+        setInterval(() => {
+            saveDraft();
+        }, 15000); // elke 15 seconden
+
+        // load draft on start
+        loadDraft();
+
+        // export/import JSON
+        $('#exportJsonBtn').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(collectFormData(), null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'partnerschap_aanvraag_draft.json'; a.click();
+            URL.revokeObjectURL(url);
+        });
+        $('#downloadJsonBtn').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(collectFormData(), null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'partnerschap_aanvraag.json'; a.click();
+            URL.revokeObjectURL(url);
+        });
+        $('#importJsonBtn').addEventListener('click', () => {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const obj = JSON.parse(ev.target.result);
+                        Object.keys(obj).forEach(k => {
+                            const el = document.querySelector(`[name="${k}"], #${k}`);
+                            if (!el) return;
+                            if (el.type === 'checkbox') el.checked = obj[k];
+                            else el.value = obj[k];
+                        });
+                        alert('Concept ingeladen.');
+                        saveDraft();
+                        if ($('#inviteInput').value) previewInvite();
+                    } catch (err) { alert('Ongeldig JSON bestand'); }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
+        /* =============================================================
+           PDF generation (jsPDF)
+           - generate a readable PDF with titles and full answers
+           - includes language header
+           ============================================================= */
+        $('#downloadPdfBtn').addEventListener('click', generatePDF);
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const margin = 36;
+            let y = 48;
+            const lineHeight = 14;
+            const pageHeight = 842;
+            const t = TRANSLATIONS[LANG];
+
+            // header
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.text(t.panelTitle + ' - Aanvraag', margin, y);
+            y += 28;
+            doc.setFontSize(11);
+            doc.setFont('Helvetica', 'normal');
+            doc.text(`Taal: ${LANG.toUpperCase()}`, margin, y);
+            y += 18;
+            doc.setDrawColor(230, 230, 230);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, 595 - margin, y);
+            y += 18;
+
+            // fields to include (gather all inputs)
+            const data = collectFormData();
+
+            // print each key: nice label mapping
+            const labelMap = Object.assign({}, TRANSLATIONS[LANG].labels || {});
+
+            // Title "Regels" with acceptance
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(13);
+            doc.text(t.rulesHeader, margin, y); y += 18;
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(10);
+            TRANSLATIONS[LANG].rules.forEach(r => {
+                const lines = doc.splitTextToSize(r, 595 - margin * 2);
+                if (y + lines.length * lineHeight > pageHeight - 60) { doc.addPage(); y = 48; }
+                doc.text(lines, margin, y);
+                y += lines.length * lineHeight;
+            });
+            y += 6;
+            doc.setFont('Helvetica', 'italic');
+            doc.text(`${t.acceptText}: ${data.acceptRules ? 'Ja' : 'Nee'}`, margin, y);
+            y += 18;
+            doc.setFont('Helvetica', 'normal');
+
+            // generic loop for other fields (sorted)
+            const keysOrder = [
+                'serverName', 'inviteInput', 'memberCount', 'minAge', 'shortDesc', 'socialLinks',
+                'audience', 'activityLevel', 'events', 'organisersCount', 'strengths', 'weaknesses',
+                'quyaScore', 'quyaShort', 'quyaExplain',
+                'modTools', 'modCount', 'moderationPolicy', 'appeals', 'auditLogs', 'safetyMeasures', 'incidents',
+                'motivation', 'offer1', 'expectation1', 'partnerHistory', 'preferredContact', 'responseTime', 'additionalNotes'
+            ];
+
+            keysOrder.forEach(k => {
+                if (!(k in data)) return;
+                const rawVal = data[k];
+                if (rawVal === null || rawVal === undefined || rawVal === '') return;
+                const label = (labelMap && labelMap[k]) ? labelMap[k] : k;
+                const text = `${label}: ${rawVal}`;
+                const wrapped = doc.splitTextToSize(text, 595 - margin * 2);
+                if (y + wrapped.length * lineHeight > pageHeight - 60) { doc.addPage(); y = 48; }
+                doc.setFont('Helvetica', 'bold'); doc.text(label, margin, y); y += lineHeight;
+                doc.setFont('Helvetica', 'normal'); doc.text(wrapped, margin + 8, y); y += wrapped.length * lineHeight + 6;
+            });
+
+            // footer
+            doc.setFontSize(9);
+            doc.setFont('Helvetica', 'italic');
+            doc.text(`Gegenereerd door Discord Partnerschap formulier — taal: ${LANG.toUpperCase()}`, margin, pageHeight - 30);
+
+            // save
+            const filename = `Aanvraag_Partnerschap_${(data.serverName || 'server').replace(/\s+/g, '_')}.pdf`;
+            doc.save(filename);
+        }
+
+        /* =============================================================
+           Build review table (for step 6)
+           ============================================================= */
+        function buildReview() {
+            const data = collectFormData();
+            const table = $('#reviewTable');
+            table.innerHTML = '';
+            function addRow(k, v) {
+                const tr = document.createElement('tr');
+                const td1 = document.createElement('td'); td1.style.width = '220px'; td1.innerHTML = `<strong>${k}</strong>`;
+                const td2 = document.createElement('td'); td2.innerText = v || '-';
+                tr.appendChild(td1); tr.appendChild(td2); table.appendChild(tr);
+            }
+
+            // summary fields (human labels)
+            const tlabels = TRANSLATIONS[LANG].labels || {};
+            addRow('Taal', LANG.toUpperCase());
+            addRow(tlabels.serverName || 'Server', data.serverName);
+            addRow(tlabels.invite || 'Invite', data.inviteInput);
+            addRow(tlabels.members || 'Leden', data.memberCount);
+            addRow(tlabels.age || 'Leeftijdsrestrictie', data.minAge);
+            addRow(tlabels.shortDesc || 'Beschrijving', data.shortDesc);
+            addRow(tlabels.socials || 'Socials', data.socialLinks);
+            addRow('Doelgroep', data.audience);
+            addRow('Activiteit', data.activityLevel);
+            addRow('Events', data.events);
+            addRow('Organisers', data.organisersCount);
+            addRow(tlabels.strengths || 'Sterktes', data.strengths);
+            addRow(tlabels.weaknesses || 'Zwaktes', data.weaknesses);
+            addRow(tlabels.quyaScore || 'Quya score', data.quyaScore);
+            addRow('Quya toelichting', data.quyaExplain);
+            addRow(tlabels.modTools || 'Moderatie tools', data.modTools);
+            addRow(tlabels.modCount || 'Moderators', data.modCount);
+            addRow(tlabels.modPolicy || 'Moderatiebeleid', data.moderationPolicy);
+            addRow(tlabels.appeals || 'Appeals', data.appeals);
+            addRow('Audit logs', data.auditLogs);
+            addRow(tlabels.safety || 'Veiligheid', data.safetyMeasures);
+            addRow(tlabels.incidents || 'Incidenten', data.incidents);
+            addRow(tlabels.motivation || 'Motivatie', data.motivation);
+            addRow(tlabels.offer || 'Aanbod', data.offer1);
+            addRow(tlabels.expectation || 'Verwachting', data.expectation1);
+            addRow(tlabels.history || 'Eerdere partnerschappen', data.partnerHistory);
+            addRow(tlabels.contact || 'Contact', data.preferredContact);
+            addRow(tlabels.responseTime || 'Responstijd', data.responseTime);
+            addRow(tlabels.additional || 'Extra', data.additionalNotes);
+        }
+
+        /* =============================================================
+           Simple debounce util
+           ============================================================= */
+        function debounce(fn, wait = 300) {
+            let t;
+            return function (...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        /* =============================================================
+           Webhook placeholder: client side cannot attach PDF; would require server.
+           But we provide a simple JSON POST option to a user-provided webhook URL.
+           ============================================================= */
+        $('#sendWebhookBtn').addEventListener('click', async () => {
+            const url = prompt('Voer webhook URL in (let op: dit stuurt alleen JSON, geen PDF):');
+            if (!url) return;
+            const payload = collectFormData();
+            try {
+                const r = await fetch(url, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (r.ok) alert('Verzonden!');
+                else alert('Fout bij verzenden: ' + r.status);
+            } catch (e) {
+                alert('Verzenden mislukt: ' + e.message);
+            }
+        });
+
+        /* =============================================================
+           Small accessibility: enter key navigation for inputs
+           ============================================================= */
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter') {
+                // avoid triggering on textarea
+                if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') return;
+                // Submit current step -> next
+                if (state.currentStep < 6) {
+                    const nextBtn = document.querySelector(`#toStep${state.currentStep + 1}`);
+                    if (nextBtn) { nextBtn.click(); ev.preventDefault(); }
+                } else {
+                    // generate PDF
+                    $('#downloadPdfBtn').click();
+                }
+            }
+        });
+
+        // Initialize on load
+        gotoStep(1);
+
+        // load draft if exists (already called above), but ensure preview update
+        if ($('#inviteInput').value) previewInvite();
+
+        // small: allow clicking sidebar steps
+        stepItems.forEach(it => {
+            it.addEventListener('click', () => {
+                const s = parseInt(it.dataset.step, 10);
+                gotoStep(s);
+            });
+        });
+
+        // Small UX: show page title refresh
+        document.title = TRANSLATIONS[LANG].panelTitle + ' — Aanvraag';
     </script>
 </body>
 
